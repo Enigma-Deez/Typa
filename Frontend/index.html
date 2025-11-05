@@ -94,6 +94,9 @@
 
 <script>
 /* ------------------ Original + Upgraded JS --------------------- */
+const API_BASE = location.hostname.includes("localhost")
+  ? "http://localhost:5000"
+  : "https://typa-zalo.onrender.com";
 
 const texts = [
   "The quick brown fox jumps over the lazy dog",
@@ -175,11 +178,12 @@ function endTest() {
   resultEl.textContent = `✅ WPM: ${wpm} | 🎯 Accuracy: ${accuracy}% | ⏱ ${timeTaken.toFixed(1)}s`;
   inputEl.disabled = true;
 
-  fetch("http://localhost:5000/api/scores/submit", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username: usernameEl.value, wpm, accuracy })
-  });
+fetch(`${API_BASE}/api/scores/submit`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ username: usernameEl.value, wpm, accuracy })
+});
+
 
   loadLeaderboard();
   usernameEl.disabled = false;
@@ -187,7 +191,7 @@ function endTest() {
 }
 
 async function loadLeaderboard() {
-  const res = await fetch("http://localhost:5000/api/scores/leaderboard");
+  const res = await fetch(`${API_BASE}/api/scores/leaderboard`);
   const data = await res.json();
   boardEl.innerHTML = data.map(
     s => `<tr><td>${s.username}</td><td>${s.wpm}</td><td>${s.accuracy}%</td></tr>`
