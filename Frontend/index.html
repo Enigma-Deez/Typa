@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Typing Speed Test</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    text-align: center;
+    padding: 30px;
+  }
+
+  #container {
+    width: 600px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+
+  #text {
+    font-size: 18px;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #eee;
+    border-radius: 5px;
+    min-height: 50px;
+  }
+
+  #input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+  }
+
+  #username-box input {
+    padding: 8px;
+    width: 60%;
+  }
+
+  #username-box button {
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+
+  #leaderboard {
+    margin-top: 25px;
+    text-align: left;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  td, th {
+    padding: 6px;
+    border-bottom: 1px solid #ccc;
+  }
+</style>
+</head>
+<body>
+
+<div id="container">
+  <h2>Typing Speed Test</h2>
+
+  <div id="username-box">
+    <input id="username" type="text" placeholder="Enter your name...">
+    <button id="start-btn" onclick="startTest()">Start Test</button>
+  </div>
+
+  <p id="text">Your text will appear here...</p>
+
+  <input id="input" disabled placeholder="Start typing here...">
+
+  <p id="result"></p>
+
+  <button onclick="restartTest()">Reset</button>
+
+  <div id="leaderboard">
+    <h3>Leaderboard</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th><th>WPM</th><th>Accuracy</th>
+        </tr>
+      </thead>
+      <tbody id="board"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+/* ------------------ Original + Upgraded JS --------------------- */
+
+const texts = [
+  "The quick brown fox jumps over the lazy dog",
+  "Typing speed tests measure how fast you can type",
+  "Practice makes perfect keep improving daily",
+  "Javascript is fun once you understand the basics",
+  "Discipline and consistency will always beat motivation",
+  "Achievers University is building the future today",
+  "Great developers start with small projects and grow big",
+  "Accuracy is more important than speed when learning typing",
+  "Success is the sum of small efforts repeated daily"
+];
+
+let startTime, endTime;
+let isStarted = false;
+let currentText = "";
+
+const textEl = document.getElementById("text");
+const inputEl = document.getElementById("input");
+const resultEl = document.getElementById("result");
+const boardEl = document.getElementById("board");
+const usernameEl = document.getElementById("username");
+const startBtn = document.getElementById("start-btn");
+
+function startTest() {
+  const username = usernameEl.value.trim();
+  if (!username) {
+    alert("Please enter your name first!");
+    return;
+  }
+
+  currentText = texts[Math.floor(Math.random() * texts.length)];
+  textEl.textContent = currentText;
+  inputEl.value = "";
+  inputEl.disabled = false;
+  inputEl.focus();
+  resultEl.textContent = "";
+  isStarted = false;
+
+  usernameEl.disabled = true;
+  startBtn.disabled = true;
+}
+
+function restartTest() {
+  textEl.textContent = "Your text will appear here...";
+  inputEl.value = "";
+  inputEl.disabled = true;
+  resultEl.textContent = "";
+  isStarted = false;
+
+  usernameEl.disabled = false;
+  startBtn.disabled = false;
+}
+
+inputEl.addEventListener("input", () => {
+  if (!isStarted) {
+    startTime = new Date();
+    isStarted = true;
+  }
+
+  if (inputEl.value === currentText) {
+    endTest();
+  }
+});
+
+function endTest() {
+  endTime = new Date();
+  const timeTaken = (endTime - startTime) / 1000;
+  const totalWords = currentText.split(" ").length;
+  const wpm = Math.round((totalWords / timeTaken) * 60);
+
+  let correctChars = 0;
+  const inputText = inputEl.value;
+  for (let i = 0; i < inputText.length; i++) {
+    if (inputText[i] === currentText[i]) correctChars++;
+  }
+  const accuracy = Math.round((correctChars / currentText.length) * 100);
+
+  resultEl.textContent = `✅ WPM: ${wpm} | 🎯 Accuracy: ${accuracy}% | ⏱ ${timeTaken.toFixed(1)}s`;
+  inputEl.disabled = true;
+
+  fetch("http://localhost:5000/api/scores/submit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username: usernameEl.value, wpm, accuracy })
+  });
+
+  loadLeaderboard();
+  usernameEl.disabled = false;
+  startBtn.disabled = false;
+}
+
+async function loadLeaderboard() {
+  const res = await fetch("http://localhost:5000/api/scores/leaderboard");
+  const data = await res.json();
+  boardEl.innerHTML = data.map(
+    s => `<tr><td>${s.username}</td><td>${s.wpm}</td><td>${s.accuracy}%</td></tr>`
+  ).join("");
+}
+
+loadLeaderboard();
+</script>
+</body>
+</html>
