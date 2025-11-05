@@ -8,16 +8,19 @@ import scoreRoutes from "./Routes/scoreRoutes.js";
 connectDB();
 
 const app = express();
+
 app.use(cors({
   origin: [
     "http://localhost:3000",
     "http://localhost:5500",
     "http://127.0.0.1:5500",
-    "https://typa-iota.vercel.app"
+    "https://typa-iota.vercel.app",  // ✅ Vercel frontend
+    "https://typa-zalo.onrender.com" // ✅ Render backend URL so browser trusts it
   ],
   methods: ["GET", "POST"],
   credentials: true
 }));
+
 app.use(express.json());
 
 app.use("/api/scores", scoreRoutes);
