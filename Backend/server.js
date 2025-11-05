@@ -9,17 +9,31 @@ connectDB();
 
 const app = express();
 
-app.use(cors({
-  origin: [
-    "http://localhost:3000",
-    "http://localhost:5500",
-    "http://127.0.0.1:5500",
-    "https://typa-iota.vercel.app",  // ✅ Vercel frontend
-    "https://typa-zalo.onrender.com" // ✅ Render backend URL so browser trusts it
-  ],
-  methods: ["GET", "POST"],
-  credentials: true
-}));
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5500",
+  "http://127.0.0.1:5500",
+  "https://typa-iota.vercel.app",
+  "https://typa-zalo.onrender.com"
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type"],
+    credentials: true,
+    preflightContinue: false
+  })
+);
+
+app.options("*", cors()); // ✅ handle all OPTIONS preflight requests
 
 app.use(express.json());
 
