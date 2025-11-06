@@ -10,15 +10,12 @@ const connectDB = async () => {
 
     console.log("⏳ Connecting to MongoDB...");
 
-    const conn = await mongoose.connect(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    const conn = await mongoose.connect(uri);
 
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
   } catch (err) {
     console.error("❌ MongoDB Connection Error:", err.message);
-    process.exit(1); // Exit on failure to avoid partial startup
+    process.exit(1);
   }
 };
 
