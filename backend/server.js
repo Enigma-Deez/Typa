@@ -36,9 +36,6 @@ app.use(
   })
 );
 
-// ✅ Automatically handle all OPTIONS requests
-app.options("*", cors());
-
 // ✅ Middleware
 app.use(express.json());
 
