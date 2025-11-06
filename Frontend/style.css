@@ -95,3 +95,12 @@
     @media (max-width: 600px) {
       textarea { height: 80px; }
     }
+        .username-area {
+    margin-bottom: 10px;
+    }
+
+    .username-area input {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    }

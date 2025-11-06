@@ -1,3 +1,24 @@
+// Username save
+window.addEventListener("DOMContentLoaded", () => {
+  const savedName = localStorage.getItem("username");
+  const usernameInput = document.getElementById("username");
+
+  if (savedName && usernameInput) {
+    usernameInput.value = savedName;
+    console.log(`Welcome back, ${savedName}!`);
+  }
+});
+function saveUsername() {
+  const usernameInput = document.getElementById("username");
+  const username = usernameInput?.value.trim();
+
+  if (username) {
+    localStorage.setItem("username", username);
+    console.log(`Saved username: ${username}`);
+  }
+}
+
+//Main
 const API_BASE = "https://typa-zalo.onrender.com";
 const texts = [
     "The quick brown fox jumps over the lazy dog",
@@ -62,7 +83,8 @@ async function endTest() {
     resultEl.textContent = `✅ WPM: ${wpm} | 🎯 Accuracy: ${accuracy}% | ⏱ Time: ${timeTaken.toFixed(1)}s`;
     inputEl.disabled = true;
 
-    const username = prompt("Enter your name:") || "Anonymous";
+    const username = localStorage.getItem("username") || prompt("Enter your name:") || "Anonymous";
+    localStorage.setItem("username", username);
     const season = "2025-Q4";
 
     try {

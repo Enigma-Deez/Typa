@@ -12,6 +12,16 @@
     <button id="theme-toggle">🌞 / 🌙</button>
   </div>
   <div class="container">
+    <div class="username-area">
+  <label for="username">Username:</label>
+  <input 
+    type="text" 
+    id="username" 
+    placeholder="Enter name..."
+    autocomplete="off"
+    oninput="saveUsername()"
+  >
+</div>
     <p id="text">Your text will appear here...</p>
 <form id="testForm">
   <textarea 
