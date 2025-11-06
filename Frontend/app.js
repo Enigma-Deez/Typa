@@ -82,9 +82,30 @@ async function loadLeaderboard() {
         const res = await fetch(`${API_BASE}/api/scores/season/2025-Q4?deviceType=${league}`);
         const data = await res.json();
 
+        function getOrdinalSuffix(n) {
+            const j = n % 10, k = n % 100;
+            if (j === 1 && k !== 11) return `${n}st`;
+            if (j === 2 && k !== 12) return `${n}nd`;
+            if (j === 3 && k !== 13) return `${n}rd`;
+            return `${n}th`;
+        }
+
         boardEl.innerHTML = data.map((s, i) => {
-            const rankIcon = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i - 2}th loser`;
-            return `<tr><td class="rank">${rankIcon}</td><td>${s.username}</td><td>${s.wpm}</td><td>${s.accuracy}%</td></tr>`;
+            let rankIcon;
+
+            if (i === 0) rankIcon = "🥇";
+            else if (i === 1) rankIcon = "🥈";
+            else if (i === 2) rankIcon = "🥉";
+            else rankIcon = `${getOrdinalSuffix(i - 2)} loser 💀`;
+
+            return `
+                <tr>
+                    <td class="rank">${rankIcon}</td>
+                    <td>${s.username}</td>
+                    <td>${s.wpm}</td>
+                    <td>${s.accuracy}%</td>
+                </tr>
+            `;
         }).join("");
     } catch (err) {
         console.error("Leaderboard error:", err);
