@@ -1,4 +1,4 @@
-import Score from "../models/Score.js";
+import Score from "../models/score.js";
 
 export const submitScore = async (req, res) => {
   const { username, wpm, accuracy } = req.body;
