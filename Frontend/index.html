@@ -11,10 +11,24 @@
     <h1>Typa</h1>
     <button id="theme-toggle">🌞 / 🌙</button>
   </div>
-
   <div class="container">
     <p id="text">Your text will appear here...</p>
-    <textarea id="input" disabled placeholder="Start typing..."></textarea>
+<form id="testForm">
+  <textarea 
+    id="answer"
+    name="answer"
+    placeholder="Start typing..."
+    autocomplete="off"
+    autocorrect="off"
+    autocapitalize="off"
+    spellcheck="false"
+    oncopy="return false"
+    onpaste="return false"
+    oncut="return false"
+    oncontextmenu="return false"
+    onkeydown="return disableShortcuts(event)"
+  ></textarea>
+</form>
     <div>
       <button onclick="startTest()">Start</button>
       <button onclick="restartTest()">Reset</button>

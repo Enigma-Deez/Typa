@@ -105,3 +105,12 @@
     }
 
     loadLeaderboard();
+
+    //Copy paste family contingency
+    function disableShortcuts(e) {
+  // Disable Ctrl/Command shortcuts like copy, paste, cut, etc.
+  if ((e.ctrlKey || e.metaKey) && 
+      ['c', 'v', 'x', 'a'].includes(e.key.toLowerCase())) {
+    e.preventDefault();
+  }
+}
