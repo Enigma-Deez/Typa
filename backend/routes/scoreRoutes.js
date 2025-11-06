@@ -1,5 +1,5 @@
 import express from "express";
-import Score from "../models/Score.js";
+import Score from "../models/score.js";
 
 const router = express.Router();
 
