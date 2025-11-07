@@ -65,20 +65,29 @@ router.post("/submit", async (req, res) => {
   }
 });
 
-// ✅ GET /api/scores/season/:season?deviceType=...
-router.get("/season/:season", async (req, res) => {
+// GET /api/scores/seasons
+import express from "express";
+import Score from "../models/score.js";
+
+router.get("/seasons", async (req, res) => {
   try {
-    const { season } = req.params;
-    const { deviceType } = req.query;
+    // Get distinct seasons from DB
+    const seasons = await Score.distinct("season");
 
-    const query = { season };
-    if (deviceType) query.deviceType = deviceType;
+    // Sort newest first
+    seasons.sort((a, b) => b.localeCompare(a));
 
-    const scores = await Score.find(query).sort({ wpm: -1, accuracy: -1 });
-    res.json(scores);
+    // Map to an object with season number and date
+    const seasonsMapped = seasons.map((s, index) => ({
+      id: s,                  // original DB season string
+      displayName: `Season ${seasons.length - index}`, // e.g., Season 1, 2 ...
+      date: s.split("-")[0]   // YYYY-MM-DD part for subtle display
+    }));
+
+    res.json(seasonsMapped);
   } catch (err) {
-    console.error("❌ Leaderboard fetch error:", err);
-    res.status(500).json({ error: "Failed to fetch leaderboard" });
+    console.error("Failed to fetch seasons:", err);
+    res.status(500).json({ error: "Failed to fetch seasons" });
   }
 });
 

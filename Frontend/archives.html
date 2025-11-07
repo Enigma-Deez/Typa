@@ -82,29 +82,33 @@
 
     let currentDevice = "desktop";
 
-    // ✅ Generate last 7 daily seasons automatically
-    function getLast7Seasons() {
-      const seasons = [];
-      const today = new Date();
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(today);
-        d.setDate(today.getDate() - i);
-        const dateStr = d.toISOString().split("T")[0];
-        const suffix = "S" + (d.getFullYear() % 100);
-        seasons.push(`${dateStr}-${suffix}`);
-      }
-      return seasons;
-    }
+// ✅ Populate season dropdown dynamically from backend
+async function populateSeasons() {
+  try {
+    const res = await fetch(`${API_BASE}/api/scores/seasons`);
+    const seasons = await res.json(); // expects array: {id, displayName, date}
 
-    const seasons = getLast7Seasons();
+    seasonSelect.innerHTML = ""; // clear existing options
 
-    // ✅ Populate dropdown
     seasons.forEach(s => {
       const opt = document.createElement("option");
-      opt.value = s;
-      opt.textContent = s;
+      opt.value = s.id;                       // use the DB season id for fetching
+      opt.textContent = `${s.displayName} (${s.date})`; // show Season N with date subtly
       seasonSelect.appendChild(opt);
     });
+
+    // ✅ Load latest season by default
+    if (seasons.length > 0) {
+      loadSeason(seasons[0].id, currentDevice);
+    }
+  } catch (err) {
+    console.error("Failed to load seasons:", err);
+    archiveBoard.innerHTML = "<tr><td colspan='4'>Error loading seasons.</td></tr>";
+  }
+}
+
+// ✅ Call it
+populateSeasons();
 
     // ✅ Load leaderboard for selected season/device
     async function loadSeason(season, deviceType) {
