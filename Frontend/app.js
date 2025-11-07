@@ -17,6 +17,30 @@ function saveUsername() {
     console.log(`Saved username: ${username}`);
   }
 }
+//If you want to detect voice input (since it tends to insert large text chunks all at once
+//This detects unnatural bursts of text appearing too quickly and clears the field.
+let lastInputTime = 0;
+
+inputEl.addEventListener("input", () => {
+  const now = Date.now();
+  const diff = now - lastInputTime;
+
+  // if a large chunk is typed very quickly, likely voice input or paste
+  if (inputEl.value.length > 15 && diff < 100) {
+    alert("Voice input or paste detected — please type manually!");
+    inputEl.value = "";
+    return;
+  }
+
+  lastInputTime = now;
+
+  if (!isStarted) {
+    startTime = new Date();
+    isStarted = true;
+  }
+  if (inputEl.value === currentText) endTest();
+});
+
 
 //Main
 const API_BASE = "https://typa-zalo.onrender.com";

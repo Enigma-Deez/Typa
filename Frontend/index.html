@@ -24,19 +24,22 @@
 </div>
     <p id="text">Your text will appear here...</p>
 <form id="testForm">
+  <p class="note">⚠️ Voice input, copy, or paste are disabled — please type manually.</p>
   <textarea 
-    id="answer"
-    name="answer"
-    placeholder="Start typing..."
-    autocomplete="off"
-    autocorrect="off"
-    autocapitalize="off"
-    spellcheck="false"
-    oncopy="return false"
-    onpaste="return false"
-    oncut="return false"
-    oncontextmenu="return false"
-    onkeydown="return disableShortcuts(event)"
+  id="answer"
+  name="answer"
+  placeholder="Start typing..."
+  autocomplete="off"
+  autocorrect="off"
+  autocapitalize="off"
+  spellcheck="false"
+  oncopy="return false"
+  onpaste="return false"
+  oncut="return false"
+  oncontextmenu="return false"
+  onkeydown="return disableShortcuts(event)"
+  x-webkit-speech="false"
+  speech="false"
   ></textarea>
 </form>
     <div>
