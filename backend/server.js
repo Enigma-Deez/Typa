@@ -4,6 +4,8 @@ import express from "express";
 import cors from "cors";
 import connectDB from "./config/db.js";
 import scoreRoutes from "./routes/scoreRoutes.js";
+app.use("/api/scores", scoreRoutes);
+
 
 // ✅ Connect to MongoDB
 connectDB();
