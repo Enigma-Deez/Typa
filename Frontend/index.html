@@ -54,12 +54,24 @@
       <button onclick="switchLeague('desktop')">💻 Desktop</button>
       <button onclick="switchLeague('mobile')">📱 Mobile</button>
     </div>
-    <table>
+ <section id="leaderboard-section">
+  <h2 class="leaderboard-title">🏆 Leaderboard</h2>
+
+  <div class="leaderboard-container">
+    <table id="leaderboard">
       <thead>
-        <tr><th>Rank</th><th>User</th><th>WPM</th><th>Accuracy</th></tr>
+        <tr>
+          <th class="col-rank">Rank</th>
+          <th class="col-user">Username</th>
+          <th class="col-wpm">WPM</th>
+          <th class="col-acc">Accuracy</th>
+        </tr>
       </thead>
-      <tbody id="leaderboard"></tbody>
+      <tbody id="leaderboard-body"></tbody>
     </table>
+  </div>
+</section>
+
   </div>
   <script src="app.js">
   </script>
