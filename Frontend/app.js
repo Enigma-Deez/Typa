@@ -23,15 +23,16 @@ function saveUsername() {
 // ✅ Main
 const API_BASE = "https://typa-zalo.onrender.com";
 const texts = [
-  "The quick brown fox jumps over the lazy dog",
-  "Typing speed tests measure how fast you can type",
-  "Practice makes perfect keep improving daily",
-  "Javascript is fun once you understand the basics",
-  "Discipline and consistency will always beat motivation",
-  "Achievers University is building the future today",
-  "Great developers start with small projects and grow big",
-  "Accuracy is more important than speed when learning typing",
-  "Success is the sum of small efforts repeated daily"
+  "Keep your fingers light and your mind steady as you type",
+  "Every keystroke brings you closer to mastery and confidence",
+  "Small progress each day builds great skill over time",
+  "Typing faster starts with typing correctly and calmly first",
+  "Stay focused and your speed will naturally improve",
+  "Discipline always beats bursts of motivation and energy",
+  "Great coders began with simple practice and daily effort",
+  "Patience turns slow learners into fast and precise thinkers",
+  "Accuracy first speed later that is the golden rule",
+  "Each typing test is one more step toward precision"
 ];
 
 let startTime, currentText, isStarted = false;
