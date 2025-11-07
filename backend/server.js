@@ -10,7 +10,7 @@ const app = express();
 // ✅ Connect to MongoDB
 connectDB();
 
-// ✅ Allow frontend origins (local + production)
+// ✅ Define allowed frontend origins
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5500",
@@ -19,20 +19,28 @@ const allowedOrigins = [
   "https://typa-zalo.onrender.com"
 ];
 
-// ✅ Use CORS safely (no callback confusion)
+// ✅ Enable CORS for these origins
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: function (origin, callback) {
+      // allow requests with no origin (like Postman or server-to-server)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = `❌ The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type"],
     credentials: true,
   })
 );
 
-// ✅ Parse JSON
+// ✅ Parse JSON requests
 app.use(express.json());
 
-// ✅ Routes
+// ✅ API Routes
 app.use("/api/scores", scoreRoutes);
 
 // ✅ Health check
