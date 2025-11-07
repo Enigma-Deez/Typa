@@ -122,11 +122,23 @@ async function endTest() {
   const season = "2025-Q4";
 
   try {
-    await fetch(`${API_BASE}/api/scores/submit`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, wpm, accuracy, season, deviceType: league })
-    });
+    const totalChars = inputText.length;
+const scoreData = {
+  username,
+  wpm,
+  accuracy,
+  totalChars,
+  timeTaken,
+  season,
+  deviceType: league,
+};
+
+await fetch(`${API_BASE}/api/scores/submit`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(scoreData),
+});
+
     loadLeaderboard();
   } catch (err) {
     console.error("Submit error:", err);

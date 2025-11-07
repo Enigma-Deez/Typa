@@ -4,25 +4,47 @@ import { CURRENT_SEASON } from "../config/season.js";
 
 const router = express.Router();
 
-// ✅ POST /api/scores/submit
+// ✅ POST /api/scores/submit (server-side verified)
 router.post("/submit", async (req, res) => {
   try {
-    const { username, wpm, accuracy, season = CURRENT_SEASON, deviceType = "desktop" } = req.body;
+    const {
+      username,
+      wpm,
+      accuracy,
+      totalChars,
+      timeTaken,
+      season = CURRENT_SEASON,
+      deviceType = "desktop",
+    } = req.body;
 
-    // ✅ 1. Check for missing fields
-    if (!username || wpm == null || accuracy == null) {
+    // 1️⃣ Check for missing fields
+    if (!username || !accuracy || !totalChars || !timeTaken) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // ✅ 2. Validate score range (anti-cheat)
-    if (wpm > 250 || wpm < 1 || accuracy > 100 || accuracy < 0) {
-      return res.status(400).json({ error: "Invalid score detected" });
+    // 2️⃣ Recalculate WPM on the server
+    const calculatedWpm = Math.round((totalChars / 5) / (timeTaken / 60));
+
+    // 3️⃣ Reject if unrealistic or mismatched
+    if (calculatedWpm > 250 || calculatedWpm < 1 || accuracy > 100 || accuracy < 0) {
+      return res.status(400).json({ error: "Invalid or unrealistic score" });
     }
 
-    // ✅ 3. Always store every valid result (no duplicates blocked)
-    const score = new Score({ username, wpm, accuracy, season, deviceType });
-    await score.save();
+    if (Math.abs(calculatedWpm - (wpm || calculatedWpm)) > 5) {
+      console.warn(`⚠️ Tampered score attempt by ${username}: client ${wpm}, server ${calculatedWpm}`);
+      return res.status(400).json({ error: "Score validation failed" });
+    }
 
+    // 4️⃣ Save every valid result
+    const score = new Score({
+      username,
+      wpm: calculatedWpm,
+      accuracy,
+      season,
+      deviceType,
+    });
+
+    await score.save();
     res.json({ message: "Score submitted successfully!" });
   } catch (err) {
     console.error("❌ Submit error:", err);
@@ -35,11 +57,9 @@ router.get("/season/:season", async (req, res) => {
   try {
     const { season } = req.params;
     const { deviceType } = req.query;
-
     const query = { season };
     if (deviceType) query.deviceType = deviceType;
 
-    // ✅ Fetch all records for the season/device
     const scores = await Score.find(query).sort({ wpm: -1, accuracy: -1 });
     res.json(scores);
   } catch (err) {
