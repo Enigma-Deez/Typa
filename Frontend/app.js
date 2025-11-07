@@ -124,21 +124,25 @@ async function endTest() {
 
   try {
     const totalChars = inputText.length;
-const scoreData = {
-  username,
-  wpm,
-  accuracy,
-  totalChars,
-  timeTaken,
-  season,
-  deviceType: league,
-};
+    // Calculate server-consistent WPM (server uses totalChars/5 as words)
+    const serverCalculatedWpm = Math.round((totalChars / 5) / (timeTaken / 60));
 
-await fetch(`${API_BASE}/api/scores/submit`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(scoreData),
-});
+    const scoreData = {
+      username,
+      // send the server-consistent WPM so tamper detection won't reject honest submissions
+      wpm: serverCalculatedWpm,
+      accuracy,
+      totalChars,
+      timeTaken,
+      season,
+      deviceType: league,
+    };
+
+    await fetch(`${API_BASE}/api/scores/submit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(scoreData),
+    });
 
     loadLeaderboard();
   } catch (err) {
@@ -149,18 +153,18 @@ await fetch(`${API_BASE}/api/scores/submit`, {
 // ✅ Leaderboard functions
 async function loadLeaderboard() {
   try {
-// ✅ Generate today's season ID (auto-rotating daily)
-function getTodaySeason() {
-  const today = new Date();
-  const dateStr = today.toISOString().split("T")[0]; // e.g., "2025-11-07"
-  const suffix = "S" + (today.getFullYear() % 100); // e.g., "S25"
-  return `${dateStr}-${suffix}`;
-}
+    // ✅ Generate today's season ID (auto-rotating daily)
+    function getTodaySeason() {
+      const today = new Date();
+      const dateStr = today.toISOString().split("T")[0]; // e.g., "2025-11-07"
+      const suffix = "S" + (today.getFullYear() % 100); // e.g., "S25"
+      return `${dateStr}-${suffix}`;
+    }
 
-const CURRENT_SEASON = getTodaySeason();
+    const CURRENT_SEASON = getTodaySeason();
 
-// ✅ Fetch leaderboard for today’s auto season
-const res = await fetch(`${API_BASE}/api/scores/season/${CURRENT_SEASON}?deviceType=${league}`);
+    // ✅ Fetch leaderboard for today’s auto season
+    const res = await fetch(`${API_BASE}/api/scores/season/${CURRENT_SEASON}?deviceType=${league}`);
     const data = await res.json();
     console.log("📊 Leaderboard fetch result:", data);
 
@@ -234,7 +238,7 @@ loadLeaderboard();
 // ✅ Disable Ctrl/Command shortcuts like copy, paste, cut, etc.
 function disableShortcuts(e) {
   if ((e.ctrlKey || e.metaKey) &&
-      ['c', 'v', 'x', 'a'].includes(e.key.toLowerCase())) {
+    ['c', 'v', 'x', 'a'].includes(e.key.toLowerCase())) {
     e.preventDefault();
   }
 }
