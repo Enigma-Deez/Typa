@@ -153,6 +153,9 @@ async function loadLeaderboard() {
       return `${n}th`;
     }
 
+    // ✅ Get the tbody element instead of the whole table
+    const leaderboardBody = document.getElementById("leaderboard-body");
+
     const html = data.map((s, i) => {
       let rankIcon;
       if (i === 0) rankIcon = "🥇";
@@ -170,13 +173,13 @@ async function loadLeaderboard() {
       `;
     }).join("");
 
-    if (boardEl) {
-      boardEl.innerHTML = html || "<tr><td colspan='4'>No scores yet.</td></tr>";
-    }
+    // ✅ Fill the tbody only
+    leaderboardBody.innerHTML = html || "<tr><td colspan='4'>No scores yet.</td></tr>";
   } catch (err) {
     console.error("Leaderboard error:", err);
   }
 }
+
 
 
 function switchLeague(type) {
