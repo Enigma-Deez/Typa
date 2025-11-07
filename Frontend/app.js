@@ -106,29 +106,36 @@ function restartTest() {
   resultEl.textContent = "";
   isStarted = false;
 }
-//Endtest
 async function endTest() {
   const endTime = new Date();
-  const timeTaken = (endTime - startTime) / 1000;
+  const timeTaken = (endTime - startTime) / 1000; // seconds
   const inputText = inputEl.value.trim();
 
-  // ✅ Standard typing WPM formula
+  // ✅ Calculate WPM using total characters / 5 (standard definition)
   const totalChars = inputText.length;
   const wpm = Math.round((totalChars / 5) / (timeTaken / 60));
 
-  // ✅ Accuracy
+  // ✅ Calculate accuracy
   const correctChars = [...inputText].filter((c, i) => c === currentText[i]).length;
   const accuracy = Math.round((correctChars / currentText.length) * 100);
 
+  // ✅ Show results on screen
   resultEl.textContent = `✅ WPM: ${wpm} | 🎯 Accuracy: ${accuracy}% | ⏱ Time: ${timeTaken.toFixed(1)}s`;
   inputEl.disabled = true;
 
+  // ✅ Get or save username locally
   const username = localStorage.getItem("username") || prompt("Enter your name:") || "Anonymous";
   localStorage.setItem("username", username);
+
+  // ✅ Manually set the current season
   const season = "2025-Q4";
 
+  // ✅ Auto-detect device type (cannot be faked by switching leaderboard tab)
+  const deviceType = /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop";
+
   try {
-    await fetch(`${API_BASE}/api/scores/submit`, {
+    // ✅ Submit score to backend
+    const res = await fetch(`${API_BASE}/api/scores/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -138,15 +145,24 @@ async function endTest() {
         totalChars,
         timeTaken,
         season,
-        deviceType: league,
+        deviceType,
       }),
     });
 
+    if (!res.ok) {
+      const errData = await res.json();
+      alert(errData.error || "Error submitting score");
+      return;
+    }
+
+    // ✅ Reload leaderboard with updated results
     loadLeaderboard();
   } catch (err) {
     console.error("Submit error:", err);
+    alert("Network error — unable to submit score.");
   }
 }
+
 
 // ✅ Leaderboard functions
 async function loadLeaderboard() {
