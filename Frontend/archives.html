@@ -73,7 +73,7 @@
     </tbody>
   </table>
 
-  <script>
+<script>
 const API_BASE = "https://typa-zalo.onrender.com";
 const seasonSelect = document.getElementById("seasonSelect");
 const archiveBoard = document.getElementById("archiveBoard");
@@ -82,7 +82,7 @@ const mobileBtn = document.getElementById("mobileBtn");
 
 let currentDevice = "desktop";
 
-// ✅ Populate season dropdown dynamically from backend
+// ✅ Populate season dropdown from backend
 async function populateSeasons() {
   try {
     const res = await fetch(`${API_BASE}/api/scores/seasons`);
@@ -95,10 +95,10 @@ async function populateSeasons() {
       return;
     }
 
-    seasons.forEach((s, index) => {
+    seasons.forEach(s => {
       const opt = document.createElement("option");
-      opt.value = s.id;                      
-      opt.textContent = `${s.displayName} (${s.date})`;
+      opt.value = s.id;                        // DB season ID
+      opt.textContent = `${s.displayName} (${s.date})`; // show Season N with date
       seasonSelect.appendChild(opt);
     });
 
@@ -115,9 +115,8 @@ async function loadSeason(season, deviceType) {
   try {
     archiveBoard.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
 
-    // ✅ Encode season to avoid 404 for strings with hyphens
+    // ✅ Encode season to prevent URL issues
     const encodedSeason = encodeURIComponent(season);
-
     const res = await fetch(`${API_BASE}/api/scores/season/${encodedSeason}?deviceType=${deviceType}`);
     const data = await res.json();
 
@@ -126,16 +125,13 @@ async function loadSeason(season, deviceType) {
       return;
     }
 
-    // Extract date from season string (YYYY-MM-DD-SXX)
+    // Extract date from season ID if needed (optional)
     const seasonDate = season.split("-")[0];
 
     archiveBoard.innerHTML = data.map((s, i) => `
       <tr>
         <td>${i + 1}</td>
-        <td>
-          ${s.username} 
-          <span style="font-size:0.75rem; color:#aaa;">(${seasonDate})</span>
-        </td>
+        <td>${s.username} <span style="font-size:0.75rem; color:#aaa;">(${seasonDate})</span></td>
         <td>${s.wpm}</td>
         <td>${s.accuracy}%</td>
       </tr>
@@ -157,9 +153,10 @@ mobileBtn.addEventListener("click", () => {
   loadSeason(seasonSelect.value, currentDevice);
 });
 
-// ✅ Initialize archive page
+// ✅ Initialize page
 populateSeasons();
 </script>
+
 
 </body>
 </html>
