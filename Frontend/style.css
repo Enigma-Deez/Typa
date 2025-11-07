@@ -105,12 +105,21 @@
     border: 1px solid #ccc;
     }
     /* heart */
-        .heart {
+    body {
       position: relative;
-      width: 100px;
-      height: 90px;
-      background-color: red;
-      transform: rotate(-45deg);
+      height: 100vh;
+      background-color: #f0f0f0;
+      margin: 0;
+    }
+
+    .heart {
+      position: absolute;
+      left:800px;             /* distance from the left edge */
+      top: 25%;               /* vertically centered */
+      transform: translateY(-50%) rotate(-45deg);
+      width: 50px;            /* smaller heart */
+      height: 45px;
+      background-color:#e06d00;
       animation: beat 1s infinite;
     }
 
@@ -118,34 +127,34 @@
     .heart::after {
       content: "";
       position: absolute;
-      width: 100px;
-      height: 90px;
-      background-color: red;
+      width: 50px;
+      height: 45px;
+      background-color: #e06d00;
       border-radius: 50%;
     }
 
     .heart::before {
-      top: -50px;
+      top: -22.5px; /* half of heart height */
       left: 0;
     }
 
     .heart::after {
-      left: 50px;
+      left: 25px;   /* half of heart width */
       top: 0;
     }
 
     @keyframes beat {
       0%, 100% {
-        transform: rotate(-45deg) scale(1);
+        transform: translateY(-50%) rotate(-45deg) scale(1);
       }
       25% {
-        transform: rotate(-45deg) scale(1.1);
+        transform: translateY(-50%) rotate(-45deg) scale(1.1);
       }
       50% {
-        transform: rotate(-45deg) scale(1.2);
+        transform: translateY(-50%) rotate(-45deg) scale(1.2);
       }
       75% {
-        transform: rotate(-45deg) scale(1.1);
+        transform: translateY(-50%) rotate(-45deg) scale(1.1);
       }
     }
 /* ===== Leaderboard Styling ===== */
