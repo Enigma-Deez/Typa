@@ -19,21 +19,7 @@ router.post("/submit", async (req, res) => {
       return res.status(400).json({ error: "Invalid score detected" });
     }
 
-    // ✅ 3. Check for existing record for same username, season, and device
-    const existing = await Score.findOne({ username, season, deviceType });
-
-    if (existing) {
-      // If new score is higher, update it instead of rejecting
-      if (wpm > existing.wpm) {
-        existing.wpm = wpm;
-        existing.accuracy = accuracy;
-        await existing.save();
-        return res.json({ message: "Updated your previous score!" });
-      }
-      return res.status(400).json({ error: "Lower or duplicate score not accepted." });
-    }
-
-    // ✅ 4. Save new valid score
+    // ✅ 3. Always store every valid result (no duplicates blocked)
     const score = new Score({ username, wpm, accuracy, season, deviceType });
     await score.save();
 
@@ -53,7 +39,8 @@ router.get("/season/:season", async (req, res) => {
     const query = { season };
     if (deviceType) query.deviceType = deviceType;
 
-    const scores = await Score.find(query).sort({ wpm: -1, accuracy: -1 }).limit(50);
+    // ✅ Fetch all records for the season/device
+    const scores = await Score.find(query).sort({ wpm: -1, accuracy: -1 });
     res.json(scores);
   } catch (err) {
     console.error("❌ Leaderboard fetch error:", err);
@@ -64,7 +51,7 @@ router.get("/season/:season", async (req, res) => {
 // ✅ Legacy route for old clients
 router.get("/leaderboard", async (req, res) => {
   try {
-    const scores = await Score.find({ season: CURRENT_SEASON }).sort({ wpm: -1, accuracy: -1 }).limit(50);
+    const scores = await Score.find({ season: CURRENT_SEASON }).sort({ wpm: -1, accuracy: -1 });
     res.json(scores);
   } catch (err) {
     console.error("❌ Legacy leaderboard error:", err);
