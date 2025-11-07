@@ -1,17 +1,16 @@
-const app = express();
-import dotenv from "dotenv";
-dotenv.config();
 import express from "express";
+import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./config/db.js";
 import scoreRoutes from "./routes/scoreRoutes.js";
-app.use("/api/scores", scoreRoutes);
 
+dotenv.config();
+const app = express();
 
 // ✅ Connect to MongoDB
 connectDB();
 
-// ✅ Define allowed origins for CORS
+// ✅ Allow frontend origins (local + production)
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5500",
@@ -20,31 +19,28 @@ const allowedOrigins = [
   "https://typa-zalo.onrender.com"
 ];
 
-// ✅ Setup CORS middleware
-// ✅ Universal CORS fix (safe for public leaderboard APIs)
-
+// ✅ Use CORS safely (no callback confusion)
 app.use(
   cors({
-    origin: "*", // allow all origins
+    origin: allowedOrigins,
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type"],
+    credentials: true,
   })
 );
 
-
-
-// ✅ Middleware
+// ✅ Parse JSON
 app.use(express.json());
 
 // ✅ Routes
 app.use("/api/scores", scoreRoutes);
 
-// ✅ Health check route
+// ✅ Health check
 app.get("/", (req, res) => {
   res.send("Typing Speed API is running 🚀");
 });
 
-// ✅ Global error handler (for CORS or others)
+// ✅ Global error handler
 app.use((err, req, res, next) => {
   console.error("❌ Server Error:", err.message);
   res.status(500).json({ message: err.message || "Server Error" });
