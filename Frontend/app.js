@@ -106,13 +106,17 @@ function restartTest() {
   resultEl.textContent = "";
   isStarted = false;
 }
-
+//Endtest
 async function endTest() {
   const endTime = new Date();
   const timeTaken = (endTime - startTime) / 1000;
-  const totalWords = currentText.split(" ").length;
-  const wpm = Math.round((totalWords / timeTaken) * 60);
-  const inputText = inputEl.value;
+  const inputText = inputEl.value.trim();
+
+  // ✅ Standard typing WPM formula
+  const totalChars = inputText.length;
+  const wpm = Math.round((totalChars / 5) / (timeTaken / 60));
+
+  // ✅ Accuracy
   const correctChars = [...inputText].filter((c, i) => c === currentText[i]).length;
   const accuracy = Math.round((correctChars / currentText.length) * 100);
 
@@ -124,25 +128,18 @@ async function endTest() {
   const season = "2025-Q4";
 
   try {
-    const totalChars = inputText.length;
-    // Calculate server-consistent WPM (server uses totalChars/5 as words)
-    const serverCalculatedWpm = Math.round((totalChars / 5) / (timeTaken / 60));
-
-    const scoreData = {
-      username,
-      // send the server-consistent WPM so tamper detection won't reject honest submissions
-      wpm: serverCalculatedWpm,
-      accuracy,
-      totalChars,
-      timeTaken,
-      season,
-      deviceType: league,
-    };
-
     await fetch(`${API_BASE}/api/scores/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(scoreData),
+      body: JSON.stringify({
+        username,
+        wpm,
+        accuracy,
+        totalChars,
+        timeTaken,
+        season,
+        deviceType: league,
+      }),
     });
 
     loadLeaderboard();
