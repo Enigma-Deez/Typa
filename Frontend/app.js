@@ -138,14 +138,12 @@ async function loadLeaderboard() {
   try {
     const res = await fetch(`${API_BASE}/api/scores/season/2025-Q4?deviceType=${league}`);
     const data = await res.json();
+    console.log("📊 Leaderboard fetch result:", data);
 
-    // Handle errors from backend
-if (!Array.isArray(data)) {
-  boardEl.innerHTML = `<tr><td colspan="4" style="color:red;">❌ Failed to load leaderboard.<br>${data.error || JSON.stringify(data)}</td></tr>`;
-  console.error("Invalid leaderboard data:", data);
-  return;
-}
-
+    if (!Array.isArray(data)) {
+      console.error("Invalid leaderboard data:", data);
+      return;
+    }
 
     function getOrdinalSuffix(n) {
       const j = n % 10, k = n % 100;
@@ -155,8 +153,7 @@ if (!Array.isArray(data)) {
       return `${n}th`;
     }
 
-    // ✅ Display all players (no cap)
-    boardEl.innerHTML = data.map((s, i) => {
+    const html = data.map((s, i) => {
       let rankIcon;
       if (i === 0) rankIcon = "🥇";
       else if (i === 1) rankIcon = "🥈";
@@ -165,7 +162,7 @@ if (!Array.isArray(data)) {
 
       return `
         <tr>
-          <td class="rank">${rankIcon}</td>
+          <td>${rankIcon}</td>
           <td>${s.username}</td>
           <td>${s.wpm}</td>
           <td>${s.accuracy}%</td>
@@ -173,18 +170,14 @@ if (!Array.isArray(data)) {
       `;
     }).join("");
 
-    // ✅ Optional infinite scroll (works if table container has limited height)
-    boardEl.parentElement.addEventListener("scroll", e => {
-      const el = e.target;
-      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10) {
-        el.scrollTop = el.scrollHeight; // allows smooth scroll to new entries
-      }
-    });
-
+    if (boardEl) {
+      boardEl.innerHTML = html || "<tr><td colspan='4'>No scores yet.</td></tr>";
+    }
   } catch (err) {
     console.error("Leaderboard error:", err);
   }
 }
+
 
 function switchLeague(type) {
   league = type;
