@@ -134,12 +134,13 @@
   overflow: hidden;
   background-color: #fff;
   text-align: center;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
 /* Table Head */
 #leaderboard thead {
-  background-color: #1a1a1a; /* Dark header row */
+  background-color: #1a1a1a;
   color: #ffffff;
 }
 
@@ -156,6 +157,7 @@
   padding: 10px 8px;
   border-bottom: 1px solid #e5e5e5;
   color: #333;
+  transition: all 0.25s ease;
 }
 
 /* Row Styling */
@@ -164,7 +166,36 @@
 }
 
 #leaderboard tr:hover {
-  background-color: #f1f1f1;
+  background-color: #e8f7ff;
+  transform: scale(1.01);
+  box-shadow: 0 0 10px rgba(0, 180, 255, 0.25);
+}
+
+/* Special Animation for Top 3 */
+#leaderboard tr:first-child td {
+  animation: shimmerGold 3s infinite linear;
+}
+#leaderboard tr:nth-child(2) td {
+  animation: shimmerSilver 3s infinite linear;
+}
+#leaderboard tr:nth-child(3) td {
+  animation: shimmerBronze 3s infinite linear;
+}
+
+@keyframes shimmerGold {
+  0% { color: #d4af37; text-shadow: 0 0 4px #ffdf00; }
+  50% { color: #ffdf00; text-shadow: 0 0 10px #ffea70; }
+  100% { color: #d4af37; text-shadow: 0 0 4px #ffdf00; }
+}
+@keyframes shimmerSilver {
+  0% { color: #c0c0c0; text-shadow: 0 0 4px #f5f5f5; }
+  50% { color: #e0e0e0; text-shadow: 0 0 10px #ffffff; }
+  100% { color: #c0c0c0; text-shadow: 0 0 4px #f5f5f5; }
+}
+@keyframes shimmerBronze {
+  0% { color: #cd7f32; text-shadow: 0 0 4px #ffb97b; }
+  50% { color: #ff9f45; text-shadow: 0 0 10px #ffd5a0; }
+  100% { color: #cd7f32; text-shadow: 0 0 4px #ffb97b; }
 }
 
 /* Column Widths */
@@ -181,6 +212,11 @@
   .col-user {
     padding-left: 10px;
   }
+  #leaderboard tr:hover {
+    transform: none;
+    box-shadow: none;
+  }
 }
+
 
 
