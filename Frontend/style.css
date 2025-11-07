@@ -112,10 +112,11 @@
 }
 
 .leaderboard-title {
-  font-size: 1.8rem;
-  margin-bottom: 15px;
-  color: #222;
+  font-size: 1.9rem;
+  margin-bottom: 18px;
+  color: #111;
   font-weight: 700;
+  letter-spacing: -0.3px;
 }
 
 /* Table Container */
@@ -128,93 +129,91 @@
 /* Table */
 #leaderboard {
   width: 90%;
-  max-width: 700px;
-  border-collapse: collapse;
-  border-radius: 12px;
-  overflow: hidden;
-  background-color: #fff;
+  max-width: 720px;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 3px 20px rgba(0, 0, 0, 0.08);
   text-align: center;
-  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  overflow: hidden;
+  transition: all 0.2s ease;
 }
 
 /* Table Head */
 #leaderboard thead {
-  background-color: #1a1a1a;
-  color: #ffffff;
+  background: linear-gradient(135deg, #202020, #2c2c2c);
+  color: #fff;
 }
 
 #leaderboard th {
-  padding: 12px 10px;
+  padding: 14px 10px;
   font-weight: 600;
+  font-size: 0.95rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-size: 0.9rem;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 /* Table Cells */
 #leaderboard td {
-  padding: 10px 8px;
-  border-bottom: 1px solid #e5e5e5;
-  color: #333;
-  transition: all 0.25s ease;
+  padding: 12px 10px;
+  color: #222;
+  border-bottom: 1px solid #ebebeb;
+  font-size: 0.95rem;
 }
 
 /* Row Styling */
 #leaderboard tr:nth-child(even) {
-  background-color: #f9f9f9;
+  background-color: #fafafa;
 }
 
+#leaderboard tr:nth-child(odd) {
+  background-color: #fff;
+}
+
+/* Remove hover from headers */
+#leaderboard thead tr:hover {
+  background: none;
+}
+
+/* No hover effect for rows (clean design) */
 #leaderboard tr:hover {
-  background-color: #e8f7ff;
-  transform: scale(1.01);
-  box-shadow: 0 0 10px rgba(0, 180, 255, 0.25);
-}
-
-/* Special Animation for Top 3 */
-#leaderboard tr:first-child td {
-  animation: shimmerGold 3s infinite linear;
-}
-#leaderboard tr:nth-child(2) td {
-  animation: shimmerSilver 3s infinite linear;
-}
-#leaderboard tr:nth-child(3) td {
-  animation: shimmerBronze 3s infinite linear;
-}
-
-@keyframes shimmerGold {
-  0% { color: #d4af37; text-shadow: 0 0 4px #ffdf00; }
-  50% { color: #ffdf00; text-shadow: 0 0 10px #ffea70; }
-  100% { color: #d4af37; text-shadow: 0 0 4px #ffdf00; }
-}
-@keyframes shimmerSilver {
-  0% { color: #c0c0c0; text-shadow: 0 0 4px #f5f5f5; }
-  50% { color: #e0e0e0; text-shadow: 0 0 10px #ffffff; }
-  100% { color: #c0c0c0; text-shadow: 0 0 4px #f5f5f5; }
-}
-@keyframes shimmerBronze {
-  0% { color: #cd7f32; text-shadow: 0 0 4px #ffb97b; }
-  50% { color: #ff9f45; text-shadow: 0 0 10px #ffd5a0; }
-  100% { color: #cd7f32; text-shadow: 0 0 4px #ffb97b; }
+  background-color: inherit;
+  transform: none;
+  box-shadow: none;
 }
 
 /* Column Widths */
 .col-rank { width: 15%; }
-.col-user { width: 40%; text-align: left; padding-left: 15px; }
-.col-wpm { width: 22%; }
-.col-acc { width: 23%; }
+.col-user { width: 40%; text-align: left; padding-left: 15px; font-weight: 500; }
+.col-wpm { width: 22%; color: #0a84ff; font-weight: 600; }
+.col-acc { width: 23%; color: #00b67a; font-weight: 600; }
 
-/* Responsive Design */
+/* Top 3 Styling */
+#leaderboard tr:first-child td {
+  font-weight: 700;
+  color: #d4af37;
+}
+#leaderboard tr:nth-child(2) td {
+  font-weight: 700;
+  color: #a7a7a7;
+}
+#leaderboard tr:nth-child(3) td {
+  font-weight: 700;
+  color: #cd7f32;
+}
+
+/* Responsive */
 @media (max-width: 600px) {
   #leaderboard {
-    font-size: 0.9rem;
+    font-size: 0.88rem;
   }
   .col-user {
     padding-left: 10px;
   }
-  #leaderboard tr:hover {
-    transform: none;
-    box-shadow: none;
+  #leaderboard th, #leaderboard td {
+    padding: 10px 6px;
   }
 }
 
