@@ -115,8 +115,10 @@ async function loadSeason(season, deviceType) {
   try {
     archiveBoard.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
 
-    // ✅ Encode season to avoid 404
-    const res = await fetch(`${API_BASE}/api/scores/season/${encodeURIComponent(season)}?deviceType=${deviceType}`);
+    // ✅ Encode season to avoid 404 for strings with hyphens
+    const encodedSeason = encodeURIComponent(season);
+
+    const res = await fetch(`${API_BASE}/api/scores/season/${encodedSeason}?deviceType=${deviceType}`);
     const data = await res.json();
 
     if (!Array.isArray(data) || data.length === 0) {

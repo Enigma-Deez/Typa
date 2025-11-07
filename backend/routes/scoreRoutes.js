@@ -66,25 +66,19 @@ router.post("/submit", async (req, res) => {
 });
 
 // GET /api/scores/seasons
-router.get("/seasons", async (req, res) => {
+router.get("/season/:season(*)", async (req, res) => {
   try {
-    // Get all distinct seasons that actually exist in DB
-    const seasons = await Score.distinct("season");
+    const { season } = req.params;
+    const { deviceType } = req.query;
 
-    // Sort newest first
-    seasons.sort((a, b) => b.localeCompare(a));
+    const query = { season };
+    if (deviceType) query.deviceType = deviceType;
 
-    // Map to user-friendly names
-    const seasonsMapped = seasons.map((s, index) => ({
-      id: s,
-      displayName: `Season ${seasons.length - index}`, // Season 1 = latest
-      date: s.split("-")[0] // YYYY-MM-DD part for subtle display
-    }));
-
-    res.json(seasonsMapped);
+    const scores = await Score.find(query).sort({ wpm: -1, accuracy: -1 });
+    res.json(scores);
   } catch (err) {
-    console.error("Failed to fetch seasons:", err);
-    res.status(500).json({ error: "Failed to fetch seasons" });
+    console.error("❌ Leaderboard fetch error:", err);
+    res.status(500).json({ error: "Failed to fetch leaderboard" });
   }
 });
 
