@@ -13,13 +13,12 @@ router.post("/submit", async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // ✅ Prevent duplicate usernames in the same season
-    const existingUser = await Score.findOne({ username, season });
-    if (existingUser) {
-      return res.status(400).json({ error: "Username already taken for this season" });
+    // ✅ Prevent duplicate usernames in same season + device
+    const existing = await Score.findOne({ username, season, deviceType });
+    if (existing) {
+      return res.status(400).json({ error: "Username already exists for this season and device" });
     }
 
-    // ✅ Save new score
     const score = new Score({ username, wpm, accuracy, season, deviceType });
     await score.save();
 
@@ -39,7 +38,7 @@ router.get("/season/:season", async (req, res) => {
     const query = { season };
     if (deviceType) query.deviceType = deviceType;
 
-    const scores = await Score.find(query).sort({ wpm: -1 }).limit(50);
+    const scores = await Score.find(query).sort({ wpm: -1, accuracy: -1 }).limit(50);
     res.json(scores);
   } catch (err) {
     console.error("❌ Leaderboard fetch error:", err);
@@ -47,10 +46,10 @@ router.get("/season/:season", async (req, res) => {
   }
 });
 
-// ✅ Optional fallback for old URLs (/leaderboard)
+// ✅ Legacy route for old clients
 router.get("/leaderboard", async (req, res) => {
   try {
-    const scores = await Score.find({ season: CURRENT_SEASON }).sort({ wpm: -1 }).limit(50);
+    const scores = await Score.find({ season: CURRENT_SEASON }).sort({ wpm: -1, accuracy: -1 }).limit(50);
     res.json(scores);
   } catch (err) {
     console.error("❌ Legacy leaderboard error:", err);

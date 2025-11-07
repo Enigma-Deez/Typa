@@ -1,3 +1,4 @@
+const app = express();
 import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
@@ -9,8 +10,6 @@ app.use("/api/scores", scoreRoutes);
 
 // ✅ Connect to MongoDB
 connectDB();
-
-const app = express();
 
 // ✅ Define allowed origins for CORS
 const allowedOrigins = [

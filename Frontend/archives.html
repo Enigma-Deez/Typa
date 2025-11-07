@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typa | Season Archives</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; text-align: center; }
+    table { margin: 20px auto; border-collapse: collapse; width: 90%; max-width: 600px; }
+    th, td { padding: 10px; border-bottom: 1px solid #ccc; }
+    th { background: #eee; }
+    select, button { margin: 10px; padding: 8px; }
+  </style>
+</head>
+<body>
+  <h1>🏆 Typa Season Archives</h1>
+  
+  <div>
+    <label for="seasonSelect">Select Season:</label>
+    <select id="seasonSelect"></select>
+  </div>
+
+  <div>
+    <button id="desktopBtn">💻 Desktop</button>
+    <button id="mobileBtn">📱 Mobile</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Rank</th><th>User</th><th>WPM</th><th>Accuracy</th></tr>
+    </thead>
+    <tbody id="archiveBoard"></tbody>
+  </table>
+
+  <script>
+    const API_BASE = "https://typa-zalo.onrender.com";
+    const seasonSelect = document.getElementById("seasonSelect");
+    const archiveBoard = document.getElementById("archiveBoard");
+    const desktopBtn = document.getElementById("desktopBtn");
+    const mobileBtn = document.getElementById("mobileBtn");
+
+    const seasons = ["2025-Q4", "2025-Q3", "2025-Q2", "2025-Q1", "2024-Q4"];
+    let currentDevice = "desktop";
+
+    // Populate season dropdown
+    seasons.forEach(s => {
+      const opt = document.createElement("option");
+      opt.value = s;
+      opt.textContent = s;
+      seasonSelect.appendChild(opt);
+    });
+
+    async function loadSeason(season, deviceType) {
+      try {
+        const res = await fetch(`${API_BASE}/api/scores/season/${season}?deviceType=${deviceType}`);
+        const data = await res.json();
+
+        archiveBoard.innerHTML = data.map((s, i) => `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${s.username}</td>
+            <td>${s.wpm}</td>
+            <td>${s.accuracy}%</td>
+          </tr>
+        `).join("");
+      } catch (err) {
+        console.error("Load error:", err);
+        archiveBoard.innerHTML = "<tr><td colspan='4'>Error loading leaderboard</td></tr>";
+      }
+    }
+
+    seasonSelect.addEventListener("change", e => loadSeason(e.target.value, currentDevice));
+    desktopBtn.addEventListener("click", () => {
+      currentDevice = "desktop";
+      loadSeason(seasonSelect.value, currentDevice);
+    });
+    mobileBtn.addEventListener("click", () => {
+      currentDevice = "mobile";
+      loadSeason(seasonSelect.value, currentDevice);
+    });
+
+    // Default load
+    loadSeason(seasons[0], currentDevice);
+  </script>
+</body>
+</html>
