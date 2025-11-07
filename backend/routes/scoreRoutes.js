@@ -1,10 +1,10 @@
 import express from "express";
 import Score from "../models/score.js";
-import { CURRENT_SEASON } from "../config/season.js";
+import { getCurrentSeason } from "../config/season.js";
 
 const router = express.Router();
 
-// ✅ POST /api/scores/submit (server-side verified)
+// ✅ POST /api/scores/submit (Server-side verified)
 router.post("/submit", async (req, res) => {
   try {
     const {
@@ -13,29 +13,39 @@ router.post("/submit", async (req, res) => {
       accuracy,
       totalChars,
       timeTaken,
-      season = CURRENT_SEASON,
       deviceType = "desktop",
     } = req.body;
 
-    // 1️⃣ Check for missing fields
+    // ✅ 1. Basic field validation
     if (!username || !accuracy || !totalChars || !timeTaken) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // 2️⃣ Recalculate WPM on the server
+    // ✅ 2. Compute current season dynamically (daily)
+    const season = getCurrentSeason();
+
+    // ✅ 3. Recalculate WPM on server for anti-cheat protection
     const calculatedWpm = Math.round((totalChars / 5) / (timeTaken / 60));
 
-    // 3️⃣ Reject if unrealistic or mismatched
-    if (calculatedWpm > 250 || calculatedWpm < 1 || accuracy > 100 || accuracy < 0) {
+    // ✅ 4. Validate realism
+    if (
+      calculatedWpm > 250 ||
+      calculatedWpm < 1 ||
+      accuracy > 100 ||
+      accuracy < 0
+    ) {
       return res.status(400).json({ error: "Invalid or unrealistic score" });
     }
 
-    if (Math.abs(calculatedWpm - (wpm || calculatedWpm)) > 5) {
-      console.warn(`⚠️ Tampered score attempt by ${username}: client ${wpm}, server ${calculatedWpm}`);
+    // ✅ 5. Detect tampering
+    if (wpm && Math.abs(calculatedWpm - wpm) > 5) {
+      console.warn(
+        `⚠️ Tampered score attempt by ${username}: client ${wpm}, server ${calculatedWpm}`
+      );
       return res.status(400).json({ error: "Score validation failed" });
     }
 
-    // 4️⃣ Save every valid result
+    // ✅ 6. Save every valid result
     const score = new Score({
       username,
       wpm: calculatedWpm,
@@ -45,7 +55,10 @@ router.post("/submit", async (req, res) => {
     });
 
     await score.save();
-    res.json({ message: "Score submitted successfully!" });
+    res.json({
+      message: "Score submitted successfully!",
+      verifiedWpm: calculatedWpm,
+    });
   } catch (err) {
     console.error("❌ Submit error:", err);
     res.status(500).json({ error: "Failed to submit score" });
@@ -57,6 +70,7 @@ router.get("/season/:season", async (req, res) => {
   try {
     const { season } = req.params;
     const { deviceType } = req.query;
+
     const query = { season };
     if (deviceType) query.deviceType = deviceType;
 
@@ -68,10 +82,14 @@ router.get("/season/:season", async (req, res) => {
   }
 });
 
-// ✅ Legacy route for old clients
+// ✅ Legacy fallback
 router.get("/leaderboard", async (req, res) => {
   try {
-    const scores = await Score.find({ season: CURRENT_SEASON }).sort({ wpm: -1, accuracy: -1 });
+    const currentSeason = getCurrentSeason();
+    const scores = await Score.find({ season: currentSeason }).sort({
+      wpm: -1,
+      accuracy: -1,
+    });
     res.json(scores);
   } catch (err) {
     console.error("❌ Legacy leaderboard error:", err);

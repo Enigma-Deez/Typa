@@ -1,3 +1,5 @@
+//Current season
+document.getElementById("seasonDisplay").textContent = `📅 Season: ${CURRENT_SEASON}`;
 // ✅ Username save
 window.addEventListener("DOMContentLoaded", () => {
   const savedName = localStorage.getItem("username");
@@ -148,7 +150,18 @@ await fetch(`${API_BASE}/api/scores/submit`, {
 // ✅ Leaderboard functions
 async function loadLeaderboard() {
   try {
-    const res = await fetch(`${API_BASE}/api/scores/season/2025-Q4?deviceType=${league}`);
+// ✅ Generate today's season ID (auto-rotating daily)
+function getTodaySeason() {
+  const today = new Date();
+  const dateStr = today.toISOString().split("T")[0]; // e.g., "2025-11-07"
+  const suffix = "S" + (today.getFullYear() % 100); // e.g., "S25"
+  return `${dateStr}-${suffix}`;
+}
+
+const CURRENT_SEASON = getTodaySeason();
+
+// ✅ Fetch leaderboard for today’s auto season
+const res = await fetch(`${API_BASE}/api/scores/season/${CURRENT_SEASON}?deviceType=${league}`);
     const data = await res.json();
     console.log("📊 Leaderboard fetch result:", data);
 
