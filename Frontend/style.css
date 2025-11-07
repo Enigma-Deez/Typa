@@ -104,3 +104,62 @@
     border-radius: 6px;
     border: 1px solid #ccc;
     }
+/* ===== Leaderboard Styling ===== */
+#leaderboard {
+  display: block;
+  max-height: 380px;        /* adjust height as needed */
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #666 #222; /* Firefox */
+}
+
+/* Scrollbar – Chrome, Edge, Safari */
+#leaderboard::-webkit-scrollbar {
+  width: 8px;
+}
+#leaderboard::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 10px;
+}
+#leaderboard::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+/* Table look and hover */
+#leaderboard tr {
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+#leaderboard tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: scale(1.01);
+}
+
+/* Rank column */
+#leaderboard td.rank {
+  width: 60px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+/* ===== Top 3 Glow Effects ===== */
+#leaderboard tr:nth-child(1) td.rank {
+  color: #ffd700; /* Gold */
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+}
+#leaderboard tr:nth-child(2) td.rank {
+  color: #c0c0c0; /* Silver */
+  text-shadow: 0 0 6px rgba(192, 192, 192, 0.7);
+}
+#leaderboard tr:nth-child(3) td.rank {
+  color: #cd7f32; /* Bronze */
+  text-shadow: 0 0 5px rgba(205, 127, 50, 0.7);
+}
+
+/* Responsive tweaks */
+@media (max-width: 600px) {
+  #leaderboard {
+    max-height: 300px;
+    font-size: 0.9rem;
+  }
+}
