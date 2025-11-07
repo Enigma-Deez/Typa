@@ -22,7 +22,6 @@ const allowedOrigins = [
 
 // ✅ Setup CORS middleware
 // ✅ Universal CORS fix (safe for public leaderboard APIs)
-import cors from "cors";
 
 app.use(
   cors({
