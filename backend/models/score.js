@@ -1,14 +1,82 @@
-import mongoose from "mongoose";
+import express from "express";
+import Score from "../models/score.js";
+import { getCurrentSeason } from "../config/season.js";
 
-const scoreSchema = new mongoose.Schema({
-  username: { type: String, required: true },
-  wpm: Number,
-  accuracy: Number,
-  season: String,
-  deviceType: String,
-}, { timestamps: true });
+const router = express.Router();
 
-// ✅ unique index: username+season+deviceType combo
-scoreSchema.index({ username: 1, season: 1, deviceType: 1 }, { unique: true });
+// ✅ POST /api/scores/submit (server-side verified)
+router.post("/submit", async (req, res) => {
+  try {
+    const {
+      username,
+      wpm,
+      accuracy,
+      totalChars,
+      timeTaken,
+      season = getCurrentSeason(),
+      deviceType = "desktop",
+    } = req.body;
 
-export default mongoose.model("Score", scoreSchema);
+    // 1️⃣ Validation
+    if (!username || !accuracy || !totalChars || !timeTaken) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // 2️⃣ Recalculate WPM on the server
+    const calculatedWpm = Math.round((totalChars / 5) / (timeTaken / 60));
+
+    // 3️⃣ Reject unrealistic or tampered scores
+    if (calculatedWpm > 250 || calculatedWpm < 1 || accuracy > 100 || accuracy < 0) {
+      return res.status(400).json({ error: "Invalid or unrealistic score" });
+    }
+
+    if (Math.abs(calculatedWpm - (wpm || calculatedWpm)) > 5) {
+      console.warn(`⚠️ Tampered score attempt by ${username}: client ${wpm}, server ${calculatedWpm}`);
+      return res.status(400).json({ error: "Score validation failed" });
+    }
+
+    // 4️⃣ Save valid result
+    const score = new Score({
+      username,
+      wpm: calculatedWpm,
+      accuracy,
+      season,
+      deviceType,
+    });
+
+    await score.save();
+    res.json({ message: "Score submitted successfully!" });
+  } catch (err) {
+    console.error("❌ Submit error:", err);
+    res.status(500).json({ error: "Failed to submit score" });
+  }
+});
+
+// ✅ GET /api/scores/season/:season
+router.get("/season/:season", async (req, res) => {
+  try {
+    const { season } = req.params;
+    const { deviceType } = req.query;
+    const query = { season };
+    if (deviceType) query.deviceType = deviceType;
+
+    const scores = await Score.find(query).sort({ wpm: -1, accuracy: -1 });
+    res.json(scores);
+  } catch (err) {
+    console.error("❌ Leaderboard fetch error:", err);
+    res.status(500).json({ error: "Failed to fetch leaderboard" });
+  }
+});
+
+// ✅ Legacy route for backward compatibility
+router.get("/leaderboard", async (req, res) => {
+  try {
+    const scores = await Score.find({ season: getCurrentSeason() }).sort({ wpm: -1, accuracy: -1 });
+    res.json(scores);
+  } catch (err) {
+    console.error("❌ Legacy leaderboard error:", err);
+    res.status(500).json({ error: "Failed to fetch leaderboard" });
+  }
+});
+
+export default router;
