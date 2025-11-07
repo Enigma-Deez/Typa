@@ -140,10 +140,12 @@ async function loadLeaderboard() {
     const data = await res.json();
 
     // Handle errors from backend
-    if (!Array.isArray(data)) {
-      console.error("Invalid leaderboard data:", data);
-      return;
-    }
+if (!Array.isArray(data)) {
+  boardEl.innerHTML = `<tr><td colspan="4" style="color:red;">❌ Failed to load leaderboard.<br>${data.error || JSON.stringify(data)}</td></tr>`;
+  console.error("Invalid leaderboard data:", data);
+  return;
+}
+
 
     function getOrdinalSuffix(n) {
       const j = n % 10, k = n % 100;

@@ -21,21 +21,18 @@ const allowedOrigins = [
 ];
 
 // ✅ Setup CORS middleware
+// ✅ Universal CORS fix (safe for public leaderboard APIs)
+import cors from "cors";
+
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.warn(`❌ Blocked by CORS: ${origin}`);
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: "*", // allow all origins
     methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
+    allowedHeaders: ["Content-Type"],
   })
 );
+
+
 
 // ✅ Middleware
 app.use(express.json());
