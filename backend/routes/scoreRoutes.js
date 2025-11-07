@@ -66,22 +66,19 @@ router.post("/submit", async (req, res) => {
 });
 
 // GET /api/scores/seasons
-import express from "express";
-import Score from "../models/score.js";
-
 router.get("/seasons", async (req, res) => {
   try {
-    // Get distinct seasons from DB
+    // Get all distinct seasons that actually exist in DB
     const seasons = await Score.distinct("season");
 
     // Sort newest first
     seasons.sort((a, b) => b.localeCompare(a));
 
-    // Map to an object with season number and date
+    // Map to user-friendly names
     const seasonsMapped = seasons.map((s, index) => ({
-      id: s,                  // original DB season string
-      displayName: `Season ${seasons.length - index}`, // e.g., Season 1, 2 ...
-      date: s.split("-")[0]   // YYYY-MM-DD part for subtle display
+      id: s,
+      displayName: `Season ${seasons.length - index}`, // Season 1 = latest
+      date: s.split("-")[0] // YYYY-MM-DD part for subtle display
     }));
 
     res.json(seasonsMapped);

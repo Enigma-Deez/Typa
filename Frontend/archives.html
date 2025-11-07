@@ -74,13 +74,13 @@
   </table>
 
   <script>
-    const API_BASE = "https://typa-zalo.onrender.com";
-    const seasonSelect = document.getElementById("seasonSelect");
-    const archiveBoard = document.getElementById("archiveBoard");
-    const desktopBtn = document.getElementById("desktopBtn");
-    const mobileBtn = document.getElementById("mobileBtn");
+   const API_BASE = "https://typa-zalo.onrender.com";
+const seasonSelect = document.getElementById("seasonSelect");
+const archiveBoard = document.getElementById("archiveBoard");
+const desktopBtn = document.getElementById("desktopBtn");
+const mobileBtn = document.getElementById("mobileBtn");
 
-    let currentDevice = "desktop";
+let currentDevice = "desktop";
 
 // ✅ Populate season dropdown dynamically from backend
 async function populateSeasons() {
@@ -90,6 +90,12 @@ async function populateSeasons() {
 
     seasonSelect.innerHTML = ""; // clear existing options
 
+    if (!seasons.length) {
+      archiveBoard.innerHTML = "<tr><td colspan='4'>No seasons found.</td></tr>";
+      return;
+    }
+
+    // ✅ Add options
     seasons.forEach(s => {
       const opt = document.createElement("option");
       opt.value = s.id;                       // use the DB season id for fetching
@@ -98,57 +104,60 @@ async function populateSeasons() {
     });
 
     // ✅ Load latest season by default
-    if (seasons.length > 0) {
-      loadSeason(seasons[0].id, currentDevice);
-    }
+    loadSeason(seasons[0].id, currentDevice);
   } catch (err) {
     console.error("Failed to load seasons:", err);
     archiveBoard.innerHTML = "<tr><td colspan='4'>Error loading seasons.</td></tr>";
   }
 }
 
-// ✅ Call it
-populateSeasons();
+// ✅ Load leaderboard for selected season/device
+async function loadSeason(season, deviceType) {
+  try {
+    archiveBoard.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
+    const res = await fetch(`${API_BASE}/api/scores/season/${season}?deviceType=${deviceType}`);
+    const data = await res.json();
 
-    // ✅ Load leaderboard for selected season/device
-    async function loadSeason(season, deviceType) {
-      try {
-        archiveBoard.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
-        const res = await fetch(`${API_BASE}/api/scores/season/${season}?deviceType=${deviceType}`);
-        const data = await res.json();
-
-        if (!Array.isArray(data) || data.length === 0) {
-          archiveBoard.innerHTML = "<tr><td colspan='4'>No scores found.</td></tr>";
-          return;
-        }
-
-        archiveBoard.innerHTML = data.map((s, i) => `
-          <tr>
-            <td>${i + 1}</td>
-            <td>${s.username}</td>
-            <td>${s.wpm}</td>
-            <td>${s.accuracy}%</td>
-          </tr>
-        `).join("");
-      } catch (err) {
-        console.error("Load error:", err);
-        archiveBoard.innerHTML = "<tr><td colspan='4'>Error loading leaderboard.</td></tr>";
-      }
+    if (!Array.isArray(data) || data.length === 0) {
+      archiveBoard.innerHTML = "<tr><td colspan='4'>No scores found.</td></tr>";
+      return;
     }
 
-    // ✅ Event listeners
-    seasonSelect.addEventListener("change", e => loadSeason(e.target.value, currentDevice));
-    desktopBtn.addEventListener("click", () => {
-      currentDevice = "desktop";
-      loadSeason(seasonSelect.value, currentDevice);
-    });
-    mobileBtn.addEventListener("click", () => {
-      currentDevice = "mobile";
-      loadSeason(seasonSelect.value, currentDevice);
-    });
+    // Extract date from season string (YYYY-MM-DD-SXX)
+    const seasonDate = season.split("-")[0];
 
-    // ✅ Load latest season by default
-    loadSeason(seasons[0], currentDevice);
+    archiveBoard.innerHTML = data.map((s, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td>
+          ${s.username} 
+          <span style="font-size:0.75rem; color:#aaa;">(${seasonDate})</span>
+        </td>
+        <td>${s.wpm}</td>
+        <td>${s.accuracy}%</td>
+      </tr>
+    `).join("");
+  } catch (err) {
+    console.error("Load error:", err);
+    archiveBoard.innerHTML = "<tr><td colspan='4'>Error loading leaderboard.</td></tr>";
+  }
+}
+
+
+// ✅ Event listeners
+seasonSelect.addEventListener("change", e => loadSeason(e.target.value, currentDevice));
+desktopBtn.addEventListener("click", () => {
+  currentDevice = "desktop";
+  loadSeason(seasonSelect.value, currentDevice);
+});
+mobileBtn.addEventListener("click", () => {
+  currentDevice = "mobile";
+  loadSeason(seasonSelect.value, currentDevice);
+});
+
+// ✅ Call populateSeasons to initialize dropdown and load latest season
+populateSeasons();
+
   </script>
 </body>
 </html>
