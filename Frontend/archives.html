@@ -74,7 +74,7 @@
   </table>
 
   <script>
-   const API_BASE = "https://typa-zalo.onrender.com";
+const API_BASE = "https://typa-zalo.onrender.com";
 const seasonSelect = document.getElementById("seasonSelect");
 const archiveBoard = document.getElementById("archiveBoard");
 const desktopBtn = document.getElementById("desktopBtn");
@@ -95,11 +95,10 @@ async function populateSeasons() {
       return;
     }
 
-    // ✅ Add options
-    seasons.forEach(s => {
+    seasons.forEach((s, index) => {
       const opt = document.createElement("option");
-      opt.value = s.id;                       // use the DB season id for fetching
-      opt.textContent = `${s.displayName} (${s.date})`; // show Season N with date subtly
+      opt.value = s.id;                      
+      opt.textContent = `${s.displayName} (${s.date})`;
       seasonSelect.appendChild(opt);
     });
 
@@ -115,7 +114,9 @@ async function populateSeasons() {
 async function loadSeason(season, deviceType) {
   try {
     archiveBoard.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
-    const res = await fetch(`${API_BASE}/api/scores/season/${season}?deviceType=${deviceType}`);
+
+    // ✅ Encode season to avoid 404
+    const res = await fetch(`${API_BASE}/api/scores/season/${encodeURIComponent(season)}?deviceType=${deviceType}`);
     const data = await res.json();
 
     if (!Array.isArray(data) || data.length === 0) {
@@ -143,7 +144,6 @@ async function loadSeason(season, deviceType) {
   }
 }
 
-
 // ✅ Event listeners
 seasonSelect.addEventListener("change", e => loadSeason(e.target.value, currentDevice));
 desktopBtn.addEventListener("click", () => {
@@ -155,9 +155,9 @@ mobileBtn.addEventListener("click", () => {
   loadSeason(seasonSelect.value, currentDevice);
 });
 
-// ✅ Call populateSeasons to initialize dropdown and load latest season
+// ✅ Initialize archive page
 populateSeasons();
+</script>
 
-  </script>
 </body>
 </html>
