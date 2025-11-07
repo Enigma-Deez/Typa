@@ -115,6 +115,7 @@
   font-size: 1.8rem;
   margin-bottom: 15px;
   color: #222;
+  font-weight: 700;
 }
 
 /* Table Container */
@@ -131,17 +132,23 @@
   border-collapse: collapse;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
   background-color: #fff;
   text-align: center;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 }
 
 /* Table Head */
+#leaderboard thead {
+  background-color: #1a1a1a; /* Dark header row */
+  color: #ffffff;
+}
+
 #leaderboard th {
-  background-color: #222;
-  color: #fff;
+  padding: 12px 10px;
   font-weight: 600;
-  padding: 12px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.9rem;
 }
 
 /* Table Cells */
@@ -175,4 +182,5 @@
     padding-left: 10px;
   }
 }
+
 
