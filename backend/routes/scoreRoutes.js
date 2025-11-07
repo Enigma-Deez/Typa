@@ -66,31 +66,22 @@ router.post("/submit", async (req, res) => {
 });
 
 // ✅ GET /api/scores/seasons - list all seasons with display names and dates
-router.get("/seasons", async (req, res) => {
+router.get("/season/:season", async (req, res) => {
   try {
-    // Get distinct seasons from the Score collection
-    const seasonsRaw = await Score.find().distinct("season");
+    const { season } = req.params;
+    const { deviceType } = req.query;
 
-    if (!seasonsRaw.length) return res.json([]);
+    const query = { season };
+    if (deviceType) query.deviceType = deviceType;
 
-    // Map seasons to an object with id, displayName, and date
-    const seasons = seasonsRaw
-      .sort((a, b) => b.localeCompare(a)) // latest first
-      .map((s, index) => {
-        const datePart = s.split("-")[0]; // YYYY-MM-DD
-        return {
-          id: s,
-          displayName: `Season ${index + 1}`, // Optionally number them sequentially
-          date: datePart
-        };
-      });
-
-    res.json(seasons);
+    const scores = await Score.find(query).sort({ wpm: -1, accuracy: -1 });
+    res.json(scores);
   } catch (err) {
-    console.error("❌ Error fetching seasons:", err);
-    res.status(500).json({ error: "Failed to fetch seasons" });
+    console.error("❌ Leaderboard fetch error:", err);
+    res.status(500).json({ error: "Failed to fetch leaderboard" });
   }
 });
+
 
 // ✅ Legacy fallback
 router.get("/leaderboard", async (req, res) => {
