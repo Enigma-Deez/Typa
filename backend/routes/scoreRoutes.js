@@ -9,16 +9,31 @@ router.post("/submit", async (req, res) => {
   try {
     const { username, wpm, accuracy, season = CURRENT_SEASON, deviceType = "desktop" } = req.body;
 
-    if (!username || !wpm || !accuracy) {
+    // ✅ 1. Check for missing fields
+    if (!username || wpm == null || accuracy == null) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // ✅ Prevent duplicate usernames in same season + device
-    const existing = await Score.findOne({ username, season, deviceType });
-    if (existing) {
-      return res.status(400).json({ error: "Username already exists for this season and device" });
+    // ✅ 2. Validate score range (anti-cheat)
+    if (wpm > 250 || wpm < 1 || accuracy > 100 || accuracy < 0) {
+      return res.status(400).json({ error: "Invalid score detected" });
     }
 
+    // ✅ 3. Check for existing record for same username, season, and device
+    const existing = await Score.findOne({ username, season, deviceType });
+
+    if (existing) {
+      // If new score is higher, update it instead of rejecting
+      if (wpm > existing.wpm) {
+        existing.wpm = wpm;
+        existing.accuracy = accuracy;
+        await existing.save();
+        return res.json({ message: "Updated your previous score!" });
+      }
+      return res.status(400).json({ error: "Lower or duplicate score not accepted." });
+    }
+
+    // ✅ 4. Save new valid score
     const score = new Score({ username, wpm, accuracy, season, deviceType });
     await score.save();
 

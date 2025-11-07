@@ -19,28 +19,49 @@ function saveUsername() {
 }
 //If you want to detect voice input (since it tends to insert large text chunks all at once
 //This detects unnatural bursts of text appearing too quickly and clears the field.
-let lastInputTime = 0;
+// ✅ Anti–voice recognition & anti–paste detection
+let lastTime = Date.now();
+let lastLength = 0;
+let suspiciousCount = 0;
 
-inputEl.addEventListener("input", () => {
-  const now = Date.now();
-  const diff = now - lastInputTime;
+if (inputEl) {
+  inputEl.addEventListener("input", () => {
+    const now = Date.now();
+    const diff = now - lastTime;
+    const lengthDiff = inputEl.value.length - lastLength;
 
-  // if a large chunk is typed very quickly, likely voice input or paste
-  if (inputEl.value.length > 15 && diff < 100) {
-    alert("Voice input or paste detected — please type manually!");
-    inputEl.value = "";
-    return;
-  }
+    // Detect massive jump in characters or ultra-fast input
+    if (lengthDiff > 10 && diff < 200) {
+      suspiciousCount++;
+      if (suspiciousCount >= 2) {
+        alert("🚫 Voice input or pasting detected. Please type manually.");
+        inputEl.value = "";
+        suspiciousCount = 0;
+        return;
+      }
+    } else {
+      suspiciousCount = 0; // reset if normal typing resumes
+    }
 
-  lastInputTime = now;
+    lastTime = now;
+    lastLength = inputEl.value.length;
 
-  if (!isStarted) {
-    startTime = new Date();
-    isStarted = true;
-  }
-  if (inputEl.value === currentText) endTest();
-});
+    // Start timer when typing begins
+    if (!isStarted && inputEl.value.length > 0) {
+      startTime = new Date();
+      isStarted = true;
+    }
+   //If someone keeps triggering the alert 3+ times, you can temporarily disable input for 30 seconds:
+   if (suspiciousCount >= 3) {
+  inputEl.disabled = true;
+  alert("🚷 Typing locked due to repeated suspicious input.");
+  setTimeout(() => { inputEl.disabled = false; }, 30000);
+}
 
+    // Finish when full text is typed
+    if (inputEl.value === currentText) endTest();
+  });
+}
 
 //Main
 const API_BASE = "https://typa-zalo.onrender.com";
@@ -142,7 +163,7 @@ async function loadLeaderboard() {
             if (i === 0) rankIcon = "🥇";
             else if (i === 1) rankIcon = "🥈";
             else if (i === 2) rankIcon = "🥉";
-            else rankIcon = `${getOrdinalSuffix(i - 2)} loser 💀`;
+            else rankIcon = `${getOrdinalSuffix(i + 1)}`;
 
             return `
                 <tr>
