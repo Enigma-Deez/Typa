@@ -128,7 +128,7 @@ async function endTest() {
   localStorage.setItem("username", username);
 
   // ✅ Manually set the current season
-  const season = "2025-Q4";
+  const season = "Season 1 (2025-11-07-S25";
 
   // ✅ Auto-detect device type (cannot be faked by switching leaderboard tab)
   const deviceType = /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop";
