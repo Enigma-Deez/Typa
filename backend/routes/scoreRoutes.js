@@ -114,5 +114,30 @@ router.get("/leaderboard", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch leaderboard" });
   }
 });
+// ✅ GET /api/scores/seasons - list all distinct seasons (latest first)
+router.get("/seasons", async (req, res) => {
+  try {
+    const seasons = await Score.distinct("season");
+
+    if (!seasons || seasons.length === 0) {
+      return res.json([]);
+    }
+
+    // Sort newest first (lexical works fine for YYYY-W## format)
+    const sorted = seasons.sort().reverse();
+
+    // Format output for the dropdown
+    const formatted = sorted.map(seasonId => ({
+      id: seasonId,
+      displayName: `Season ${seasonId.split("-W")[1] || "?"}`,
+      date: seasonId.split("-W")[0],
+    }));
+
+    res.json(formatted);
+  } catch (err) {
+    console.error("❌ Failed to fetch seasons:", err);
+    res.status(500).json({ error: "Failed to fetch seasons" });
+  }
+});
 
 export default router;
