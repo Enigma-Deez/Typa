@@ -88,17 +88,7 @@ router.get("/season/:season", async (req, res) => {
   }
 });
 
-// ✅ NEW: GET /api/scores/seasons — list all past + current seasons
-router.get("/seasons", async (req, res) => {
-  try {
-    const seasons = await Score.distinct("season");
-    seasons.sort(); // chronological order
-    res.json(seasons);
-  } catch (err) {
-    console.error("❌ Seasons fetch error:", err);
-    res.status(500).json({ error: "Failed to fetch seasons list" });
-  }
-});
+// (seasons route implemented later with formatting for the frontend)
 
 // ✅ Fallback (current season)
 router.get("/leaderboard", async (req, res) => {

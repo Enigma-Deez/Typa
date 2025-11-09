@@ -155,8 +155,8 @@ async function endTest() {
       return;
     }
 
- // ✅ Reload leaderboard with updated results
-loadLeaderboard();
+    // ✅ Reload leaderboard with updated results
+    loadLeaderboard();
   } catch (err) {
     console.error("Submit error:", err);
     alert("Network error — unable to submit score.");
@@ -172,12 +172,12 @@ async function loadSeasonList() {
 
     const seasonSelect = document.getElementById("seasonSelect");
     seasonSelect.innerHTML = seasons
-      .map((s) => `<option value="${s.id || s}">${s.name || s}</option>`)
+      .map((s) => `<option value="${s.id || s}">${s.displayName || s}</option>`)
       .join("");
 
-    // 🔹 Default to the latest season
+    // 🔹 Default to the latest season (backend returns newest first)
     if (seasons.length > 0) {
-      const latest = seasons[seasons.length - 1];
+      const latest = seasons[0];
       const latestValue = latest.id || latest;
       seasonSelect.value = latestValue;
       loadLeaderboard(latestValue);
