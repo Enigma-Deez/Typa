@@ -43,27 +43,25 @@
       color: #ddd;
     }
 
-    select,
-    button {
-      margin: 10px;
-      padding: 8px 12px;
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 6px;
-      cursor: pointer;
+    /* Ensure the closed select shows readable white text on a dark background */
+    select {
+      color: #fff !important;
+      background-color: rgba(11, 11, 11, 0.85) !important;
+      border: 1px solid rgba(255, 255, 255, 0.06) !important;
+      -webkit-text-fill-color: #fff;
+      /* iOS/Safari fix */
     }
 
-    /* Improve select option visibility: white text on a dark option background */
-    select {
-      color: #fff;
-      background: rgba(255, 255, 255, 0.04);
+    select:hover,
+    select:focus {
+      background-color: rgba(11, 11, 11, 0.95) !important;
     }
 
     select option {
       color: #fff;
       background: rgba(11, 11, 11, 0.95);
     }
+
 
     button:hover,
     select:hover {
