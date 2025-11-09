@@ -16,18 +16,18 @@ router.post("/submit", async (req, res) => {
       deviceType = "desktop",
     } = req.body;
 
-    // ✅ 1. Basic field validation
+    // 1️⃣ Basic validation
     if (!username || !accuracy || !totalChars || !timeTaken) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // ✅ 2. Compute current season dynamically (daily)
+    // 2️⃣ Current season (weekly)
     const season = getCurrentSeason();
 
-    // ✅ 3. Recalculate WPM on server for anti-cheat protection
+    // 3️⃣ Recalculate WPM server-side for fairness
     const calculatedWpm = Math.round((totalChars / 5) / (timeTaken / 60));
 
-    // ✅ 4. Validate realism
+    // 4️⃣ Sanity checks
     if (
       calculatedWpm > 250 ||
       calculatedWpm < 1 ||
@@ -37,7 +37,7 @@ router.post("/submit", async (req, res) => {
       return res.status(400).json({ error: "Invalid or unrealistic score" });
     }
 
-    // ✅ 5. Detect tampering
+    // 5️⃣ Prevent tampering
     if (wpm && Math.abs(calculatedWpm - wpm) > 5) {
       console.warn(
         `⚠️ Tampered score attempt by ${username}: client ${wpm}, server ${calculatedWpm}`
@@ -45,7 +45,13 @@ router.post("/submit", async (req, res) => {
       return res.status(400).json({ error: "Score validation failed" });
     }
 
-    // ✅ 6. Save every valid result
+    // 6️⃣ Prevent duplicate usernames within same season
+    const existingUser = await Score.findOne({ username, season });
+    if (existingUser) {
+      return res.status(400).json({ error: "Username already taken for this season" });
+    }
+
+    // 7️⃣ Save score
     const score = new Score({
       username,
       wpm: calculatedWpm,
@@ -65,7 +71,7 @@ router.post("/submit", async (req, res) => {
   }
 });
 
-// ✅ GET /api/scores/seasons - list all seasons with display names and dates
+// ✅ GET /api/scores/season/:season — fetch leaderboard by season + optional device
 router.get("/season/:season", async (req, res) => {
   try {
     const { season } = req.params;
@@ -74,7 +80,7 @@ router.get("/season/:season", async (req, res) => {
     const query = { season };
     if (deviceType) query.deviceType = deviceType;
 
-    const scores = await Score.find(query).sort({ wpm: -1, accuracy: -1 });
+    const scores = await Score.find(query).sort({ wpm: -1, accuracy: -1 }).limit(20);
     res.json(scores);
   } catch (err) {
     console.error("❌ Leaderboard fetch error:", err);
@@ -82,8 +88,19 @@ router.get("/season/:season", async (req, res) => {
   }
 });
 
+// ✅ NEW: GET /api/scores/seasons — list all past + current seasons
+router.get("/seasons", async (req, res) => {
+  try {
+    const seasons = await Score.distinct("season");
+    seasons.sort(); // chronological order
+    res.json(seasons);
+  } catch (err) {
+    console.error("❌ Seasons fetch error:", err);
+    res.status(500).json({ error: "Failed to fetch seasons list" });
+  }
+});
 
-// ✅ Legacy fallback
+// ✅ Fallback (current season)
 router.get("/leaderboard", async (req, res) => {
   try {
     const currentSeason = getCurrentSeason();

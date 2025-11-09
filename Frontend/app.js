@@ -155,19 +155,47 @@ async function endTest() {
       return;
     }
 
-    // ✅ Reload leaderboard with updated results
-    loadLeaderboard();
+ // ✅ Reload leaderboard with updated results
+loadLeaderboard();
   } catch (err) {
     console.error("Submit error:", err);
     alert("Network error — unable to submit score.");
   }
 }
 
+// ✅ Load season list for dropdown
+async function loadSeasonList() {
+  try {
+    // 🔹 Fetch available seasons from backend
+    const res = await fetch(`${API_BASE}/api/scores/seasons`);
+    const seasons = await res.json();
+
+    const seasonSelect = document.getElementById("seasonSelect");
+    seasonSelect.innerHTML = seasons
+      .map((s) => `<option value="${s.id || s}">${s.name || s}</option>`)
+      .join("");
+
+    // 🔹 Default to the latest season
+    if (seasons.length > 0) {
+      const latest = seasons[seasons.length - 1];
+      const latestValue = latest.id || latest;
+      seasonSelect.value = latestValue;
+      loadLeaderboard(latestValue);
+    }
+
+    // 🔹 Reload leaderboard when season changes
+    seasonSelect.addEventListener("change", (e) => {
+      loadLeaderboard(e.target.value);
+    });
+  } catch (err) {
+    console.error("Failed to load seasons:", err);
+  }
+}
 
 // ✅ Leaderboard functions
-async function loadLeaderboard() {
+async function loadLeaderboard(seasonParam) {
   try {
-    // ✅ Generate today's season ID (auto-rotating daily)
+    // 🔹 Use provided season or fallback to today’s
     function getTodaySeason() {
       const today = new Date();
       const dateStr = today.toISOString().split("T")[0]; // e.g., "2025-11-07"
@@ -175,10 +203,12 @@ async function loadLeaderboard() {
       return `${dateStr}-${suffix}`;
     }
 
-    const CURRENT_SEASON = getTodaySeason();
+    const season = seasonParam || getTodaySeason();
 
-    // ✅ Fetch leaderboard for today’s auto season
-    const res = await fetch(`${API_BASE}/api/scores/season/${CURRENT_SEASON}?deviceType=${league}`);
+    // 🔹 Fetch leaderboard for selected season
+    const res = await fetch(
+      `${API_BASE}/api/scores/season/${season}?deviceType=${league}`
+    );
     const data = await res.json();
     console.log("📊 Leaderboard fetch result:", data);
 
@@ -188,35 +218,37 @@ async function loadLeaderboard() {
     }
 
     function getOrdinalSuffix(n) {
-      const j = n % 10, k = n % 100;
+      const j = n % 10,
+        k = n % 100;
       if (j === 1 && k !== 11) return `${n}st`;
       if (j === 2 && k !== 12) return `${n}nd`;
       if (j === 3 && k !== 13) return `${n}rd`;
       return `${n}th`;
     }
 
-    // ✅ Get the tbody element instead of the whole table
+    // ✅ Update leaderboard table body
     const leaderboardBody = document.getElementById("leaderboard-body");
+    const html = data
+      .map((s, i) => {
+        let rankIcon;
+        if (i === 0) rankIcon = "🥇";
+        else if (i === 1) rankIcon = "🥈";
+        else if (i === 2) rankIcon = "🥉";
+        else rankIcon = `${getOrdinalSuffix(i + 1)}`;
 
-    const html = data.map((s, i) => {
-      let rankIcon;
-      if (i === 0) rankIcon = "🥇";
-      else if (i === 1) rankIcon = "🥈";
-      else if (i === 2) rankIcon = "🥉";
-      else rankIcon = `${getOrdinalSuffix(i + 1)}`;
+        return `
+          <tr>
+            <td>${rankIcon}</td>
+            <td>${s.username}</td>
+            <td>${s.wpm}</td>
+            <td>${s.accuracy}%</td>
+          </tr>
+        `;
+      })
+      .join("");
 
-      return `
-        <tr>
-          <td>${rankIcon}</td>
-          <td>${s.username}</td>
-          <td>${s.wpm}</td>
-          <td>${s.accuracy}%</td>
-        </tr>
-      `;
-    }).join("");
-
-    // ✅ Fill the tbody only
-    leaderboardBody.innerHTML = html || "<tr><td colspan='4'>No scores yet.</td></tr>";
+    leaderboardBody.innerHTML =
+      html || "<tr><td colspan='4'>No scores yet.</td></tr>";
   } catch (err) {
     console.error("Leaderboard error:", err);
   }
@@ -257,3 +289,7 @@ function disableShortcuts(e) {
   }
 }
 document.addEventListener("keydown", disableShortcuts);
+// ✅ Auto-load season list (and leaderboard) when the page is ready
+window.addEventListener("DOMContentLoaded", () => {
+  loadSeasonList();
+});

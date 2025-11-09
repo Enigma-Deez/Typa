@@ -1,13 +1,13 @@
-// models/score.js
-import mongoose from "mongoose";
+// config/season.js
+export function getCurrentSeason() {
+  const today = new Date();
 
-const scoreSchema = new mongoose.Schema({
-  username: { type: String, required: true, trim: true },
-  wpm: { type: Number, required: true },
-  accuracy: { type: Number, required: true },
-  season: { type: String, required: true },
-  deviceType: { type: String, enum: ["desktop", "mobile"], default: "desktop" },
-  createdAt: { type: Date, default: Date.now },
-});
+  const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+  const pastDays = Math.floor((today - firstDayOfYear) / 86400000);
+  const weekNumber = Math.ceil((pastDays + firstDayOfYear.getDay() + 1) / 7);
 
-export default mongoose.model("Score", scoreSchema);
+  const year = today.getFullYear();
+  return `${year}-W${String(weekNumber).padStart(2, "0")}`;
+}
+
+export const CURRENT_SEASON = getCurrentSeason();
