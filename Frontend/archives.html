@@ -75,9 +75,6 @@
   </table>
 
 <script>
-  const encodedSeason = encodeURIComponent(season);
-const res = await fetch(`${API_BASE}/api/scores/season/${encodedSeason}?deviceType=${deviceType}`);
-
 const API_BASE = "https://typa-zalo.onrender.com";
 const seasonSelect = document.getElementById("seasonSelect");
 const archiveBoard = document.getElementById("archiveBoard");
