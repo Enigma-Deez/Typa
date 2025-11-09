@@ -24,6 +24,11 @@
       color: var(--text-dark);
     }
 
+  button:hover,
+    select:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
     h1 {
       color: var(--accent);
     }
