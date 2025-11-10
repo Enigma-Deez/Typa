@@ -124,7 +124,7 @@ async function endTest() {
   const totalWords = currentText.split(" ").length;
   const inputText = inputEl.value;
   const correctChars = [...inputText].filter((c, i) => c === currentText[i]).length;
-  const accuracy = Math.round((correctChars / currentText.length) * 100);
+const accuracy = calculateAccuracy(inputText, currentText);
   const wpm = Math.round((totalWords / timeTaken) * 60);
 
   if (isBotLike()) {
@@ -189,9 +189,32 @@ async function endTest() {
   const totalChars = inputText.length;
   const wpm = Math.round((totalChars / 5) / (timeTaken / 60));
 
-  // ✅ Calculate accuracy
-  const correctChars = [...inputText].filter((c, i) => c === currentText[i]).length;
-  const accuracy = Math.round((correctChars / currentText.length) * 100);
+function levenshtein(a, b) {
+  const matrix = Array.from({ length: b.length + 1 }, (_, i) => [i]);
+  for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b[i - 1] === a[j - 1]) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1, // substitution
+          matrix[i][j - 1] + 1,     // insertion
+          matrix[i - 1][j] + 1      // deletion
+        );
+      }
+    }
+  }
+  return matrix[b.length][a.length];
+}
+
+function calculateAccuracy(input, target) {
+  const distance = levenshtein(input, target);
+  const maxLen = Math.max(input.length, target.length);
+  const accuracy = ((maxLen - distance) / maxLen) * 100;
+  return Math.max(0, Math.min(accuracy, 100)); // Clamp between 0–100
+}
 
   // ✅ Show results on screen
   resultEl.textContent = `✅ WPM: ${wpm} | 🎯 Accuracy: ${accuracy}% | ⏱ Time: ${timeTaken.toFixed(1)}s`;
