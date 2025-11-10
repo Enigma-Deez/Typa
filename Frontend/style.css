@@ -23,10 +23,14 @@
       background: var(--bg-dark);
       color: var(--text-dark);
     }
-
-  button:hover,
+button:hover,
     select:hover {
       background: rgba(255, 255, 255, 0.2);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
     }
 
     h1 {
