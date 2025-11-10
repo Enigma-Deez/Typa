@@ -1,7 +1,5 @@
 // ==================== Constants & Setup ====================
 const API_BASE = "https://typa-zalo.onrender.com";
-
-// Sample typing texts
 const texts = [
   "Keep your fingers light and your mind steady as you type",
   "Every keystroke brings you closer to mastery and confidence",
@@ -36,40 +34,36 @@ let keyIntervals = [];
 let lastKeyTime = Date.now();
 
 // ==================== Utility Functions ====================
-
-// Calculate Levenshtein distance for accuracy
+// Levenshtein distance
 function levenshtein(a, b) {
   const matrix = Array.from({ length: b.length + 1 }, (_, i) => [i]);
   for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
-
   for (let i = 1; i <= b.length; i++) {
     for (let j = 1; j <= a.length; j++) {
-      if (b[i - 1] === a[j - 1]) {
-        matrix[i][j] = matrix[i - 1][j - 1];
-      } else {
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j - 1] + 1, // substitution
-          matrix[i][j - 1] + 1,     // insertion
-          matrix[i - 1][j] + 1      // deletion
-        );
-      }
+      if (b[i - 1] === a[j - 1]) matrix[i][j] = matrix[i - 1][j - 1];
+      else matrix[i][j] = Math.min(
+        matrix[i - 1][j - 1] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j] + 1
+      );
     }
   }
   return matrix[b.length][a.length];
 }
 
+// Accuracy calculation (end of test)
 function calculateAccuracy(input, target) {
-  const distance = levenshtein(input, target);
-  const maxLen = Math.max(input.length, target.length);
+  const distance = levenshtein(input.trim(), target.trim());
+  const maxLen = Math.max(input.trim().length, target.trim().length);
   return Math.max(0, Math.min(100, ((maxLen - distance) / maxLen) * 100));
 }
 
-// Detect automated typing
+// Anti-bot detection
 function isBotLike() {
   if (keyIntervals.length < 10) return false;
   const avg = keyIntervals.reduce((a, b) => a + b, 0) / keyIntervals.length;
   const variance = keyIntervals.reduce((a, b) => a + Math.abs(b - avg), 0) / keyIntervals.length;
-  return variance < 20; // too consistent → likely automation
+  return variance < 20;
 }
 
 // Reset anti-cheat trackers
@@ -82,36 +76,27 @@ function resetSuspicion() {
 window.addEventListener("DOMContentLoaded", () => {
   const savedName = localStorage.getItem("username");
   const usernameInput = document.getElementById("username");
-  if (savedName && usernameInput) {
-    usernameInput.value = savedName;
-    console.log(`Welcome back, ${savedName}!`);
-  }
-  loadSeasonList(); // Load seasons & leaderboard
+  if (savedName && usernameInput) usernameInput.value = savedName;
+  loadSeasonList();
 });
 
 function saveUsername() {
   const usernameInput = document.getElementById("username");
   const username = usernameInput?.value.trim();
-  if (username) {
-    localStorage.setItem("username", username);
-    console.log(`Saved username: ${username}`);
-  }
+  if (username) localStorage.setItem("username", username);
 }
 
-// ==================== Input Event Handling ====================
+// ==================== Input Handling ====================
 if (inputEl) {
-  // Disable paste/drag/drop/context menu
   inputEl.addEventListener("paste", e => e.preventDefault());
   inputEl.addEventListener("drop", e => e.preventDefault());
   inputEl.addEventListener("contextmenu", e => e.preventDefault());
 
-  // Detect typing patterns
   inputEl.addEventListener("input", () => {
     const now = Date.now();
     const diff = now - lastInputTime;
     const lenDiff = inputEl.value.length - lastLength;
 
-    // Anti-cheat: detect fast bursts
     if (lenDiff > 6 && diff < 100) suspiciousBursts++;
     else suspiciousBursts = 0;
 
@@ -122,22 +107,15 @@ if (inputEl) {
       return;
     }
 
-    // Start timer on first keystroke
     if (!isStarted && inputEl.value.length > 0) {
       startTime = new Date();
       isStarted = true;
-    }
-
-    // Check if test is complete (trimmed comparison)
-    if (inputEl.value.trim() === currentText.trim()) {
-      endTest();
     }
 
     lastInputTime = now;
     lastLength = inputEl.value.length;
   });
 
-  // Record keystroke intervals
   inputEl.addEventListener("keydown", () => {
     const now = Date.now();
     keyIntervals.push(now - lastKeyTime);
@@ -178,7 +156,6 @@ async function endTest() {
 
   const endTime = new Date();
   const timeTaken = (endTime - startTime) / 1000;
-
   const totalChars = inputText.length;
   const accuracy = calculateAccuracy(inputText, currentText);
   const wpm = Math.round((totalChars / 5) / (timeTaken / 60));
@@ -196,37 +173,36 @@ async function endTest() {
   const username = localStorage.getItem("username") || prompt("Enter your name:") || "Anonymous";
   localStorage.setItem("username", username);
 
-  const season = "2025-Q4";
+  const seasonSelect = document.getElementById("seasonSelect");
+  const season = seasonSelect?.value || getCurrentSeason();
   const deviceType = /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop";
 
   try {
     const res = await fetch(`${API_BASE}/api/scores/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username,
-        wpm,
-        accuracy,
-        totalChars,
-        timeTaken,
-        season,
-        deviceType,
-      }),
+      body: JSON.stringify({ username, wpm, accuracy, totalChars, timeTaken, season, deviceType })
     });
-
     if (!res.ok) {
       const errData = await res.json();
       alert(errData.error || "Error submitting score");
       return;
     }
-
-    loadLeaderboard();
+    loadLeaderboard(season);
   } catch (err) {
     console.error("Submit error:", err);
     alert("Network error — unable to submit score.");
   }
 
   resetSuspicion();
+}
+
+// Helper for current season if none selected
+function getCurrentSeason() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const quarter = Math.floor(today.getMonth() / 3) + 1;
+  return `${year}-Q${quarter}`;
 }
 
 // ==================== Leaderboard & Seasons ====================
@@ -236,9 +212,7 @@ async function loadSeasonList() {
     const seasons = await res.json();
 
     const seasonSelect = document.getElementById("seasonSelect");
-    seasonSelect.innerHTML = seasons
-      .map(s => `<option value="${s.id || s}">${s.displayName || s}</option>`)
-      .join("");
+    seasonSelect.innerHTML = seasons.map(s => `<option value="${s.id || s}">${s.displayName || s}</option>`).join("");
 
     if (seasons.length > 0) {
       seasonSelect.value = seasons[0].id || seasons[0];
@@ -253,19 +227,25 @@ async function loadSeasonList() {
 
 async function loadLeaderboard(seasonParam) {
   try {
-    const season = seasonParam || "2025-Q4";
+    const season = seasonParam || getCurrentSeason();
     const res = await fetch(`${API_BASE}/api/scores/season/${season}?deviceType=${league}`);
     const data = await res.json();
 
     if (!Array.isArray(data)) return console.error("Invalid leaderboard data:", data);
 
+    // Keep only highest WPM per username
+    const uniqueData = Object.values(data.reduce((acc, s) => {
+      if (!acc[s.username] || s.wpm > acc[s.username].wpm) acc[s.username] = s;
+      return acc;
+    }, {}));
+
     const leaderboardBody = document.getElementById("leaderboard-body");
-    leaderboardBody.innerHTML = data
+    leaderboardBody.innerHTML = uniqueData
+      .sort((a,b) => b.wpm - a.wpm)
       .map((s, i) => {
         const rankIcon = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}th`;
         return `<tr><td>${rankIcon}</td><td>${s.username}</td><td>${s.wpm}</td><td>${s.accuracy}%</td></tr>`;
-      })
-      .join("") || "<tr><td colspan='4'>No scores yet.</td></tr>";
+      }).join("") || "<tr><td colspan='4'>No scores yet.</td></tr>";
   } catch (err) {
     console.error("Leaderboard error:", err);
   }
@@ -274,7 +254,8 @@ async function loadLeaderboard(seasonParam) {
 function switchLeague(type) {
   league = type;
   leagueEl.textContent = type === "mobile" ? "Mobile" : "Desktop";
-  loadLeaderboard();
+  const seasonSelect = document.getElementById("seasonSelect");
+  loadLeaderboard(seasonSelect?.value);
 }
 
 // ==================== Theme Toggle ====================
