@@ -43,32 +43,50 @@ const boardEl = document.getElementById("leaderboard");
 const leagueEl = document.getElementById("league");
 let league = /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop";
 
-// ✅ Anti–voice recognition & anti–paste detection
-let lastTime = Date.now();
+// ✅ Anti-Cheat v2
+let lastInputTime = Date.now();
 let lastLength = 0;
-let suspiciousCount = 0;
+let suspiciousBursts = 0;
+let keyIntervals = [];
+let lastKeyTime = Date.now();
+
+function resetSuspicion() {
+  suspiciousBursts = 0;
+  keyIntervals = [];
+}
 
 if (inputEl) {
+  // Disable paste, drop, and shortcuts
+  inputEl.addEventListener("paste", e => {
+    e.preventDefault();
+    alert("🚫 Pasting is disabled — type manually.");
+  });
+
+  inputEl.addEventListener("drop", e => {
+    e.preventDefault();
+    alert("🚫 Drag & drop disabled.");
+  });
+
+  inputEl.addEventListener("contextmenu", e => e.preventDefault());
+
+  // Detect typing patterns
   inputEl.addEventListener("input", () => {
     const now = Date.now();
-    const diff = now - lastTime;
-    const lengthDiff = inputEl.value.length - lastLength;
+    const diff = now - lastInputTime;
+    const lenDiff = inputEl.value.length - lastLength;
 
-    // Detect unnatural bursts of text (voice or paste)
-    if (lengthDiff > 10 && diff < 200) {
-      suspiciousCount++;
-      if (suspiciousCount >= 2) {
-        alert("🚫 Voice input or pasting detected. Please type manually.");
+    // ⚠️ Detect abnormal typing bursts (voice/paste)
+    if (lenDiff > 4 && diff < 120) {
+      suspiciousBursts++;
+      if (suspiciousBursts >= 2) {
+        alert("🚷 Suspicious input detected — type naturally.");
         inputEl.value = "";
-        suspiciousCount = 0;
+        resetSuspicion();
         return;
       }
     } else {
-      suspiciousCount = 0;
+      suspiciousBursts = 0;
     }
-
-    lastTime = now;
-    lastLength = inputEl.value.length;
 
     // Start timer when typing begins
     if (!isStarted && inputEl.value.length > 0) {
@@ -76,16 +94,72 @@ if (inputEl) {
       isStarted = true;
     }
 
-    // Optional: temporary lock if repeated suspicious input
-    if (suspiciousCount >= 3) {
-      inputEl.disabled = true;
-      alert("🚷 Typing locked due to repeated suspicious input.");
-      setTimeout(() => { inputEl.disabled = false; }, 30000);
-    }
-
-    // End test when full text is typed
+    // End test when done
     if (inputEl.value === currentText) endTest();
+
+    lastInputTime = now;
+    lastLength = inputEl.value.length;
   });
+
+  // Record keystroke rhythm for variance detection
+  inputEl.addEventListener("keydown", () => {
+    const now = Date.now();
+    keyIntervals.push(now - lastKeyTime);
+    lastKeyTime = now;
+  });
+}
+
+// ✅ Check if typing rhythm looks “too uniform”
+function isBotLike() {
+  if (keyIntervals.length < 10) return false;
+  const avg = keyIntervals.reduce((a, b) => a + b, 0) / keyIntervals.length;
+  const variance = keyIntervals.reduce((a, b) => a + Math.abs(b - avg), 0) / keyIntervals.length;
+  return variance < 20; // too consistent → likely automation
+}
+
+// ✅ Run at test end
+async function endTest() {
+  const endTime = new Date();
+  const timeTaken = (endTime - startTime) / 1000;
+  const totalWords = currentText.split(" ").length;
+  const inputText = inputEl.value;
+  const correctChars = [...inputText].filter((c, i) => c === currentText[i]).length;
+  const accuracy = Math.round((correctChars / currentText.length) * 100);
+  const wpm = Math.round((totalWords / timeTaken) * 60);
+
+  if (isBotLike()) {
+    alert("🚫 Automated typing pattern detected — score rejected.");
+    inputEl.value = "";
+    resetSuspicion();
+    return;
+  }
+
+  resultEl.textContent = `✅ WPM: ${wpm} | 🎯 Accuracy: ${accuracy}% | ⏱ Time: ${timeTaken.toFixed(1)}s`;
+  inputEl.disabled = true;
+
+  // Send verified data to backend
+  const username = localStorage.getItem("username") || prompt("Enter your name:") || "Anonymous";
+  localStorage.setItem("username", username);
+  const season = "2025-Q4";
+
+  try {
+    await fetch(`${API_BASE}/api/scores/submit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username,
+        wpm,
+        accuracy,
+        totalChars: inputText.length,
+        timeTaken,
+        season,
+        deviceType: league,
+      }),
+    });
+    loadLeaderboard();
+  } catch (err) {
+    console.error("Submit error:", err);
+  }
 }
 
 // ✅ Test functions
