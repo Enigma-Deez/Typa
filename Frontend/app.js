@@ -182,6 +182,7 @@ async function endTest() {
   const accuracy = calculateAccuracy(inputText, currentText);
   const wpm = Math.round((totalChars / 5) / (timeTaken / 60));
 
+
   if (isBotLike()) {
     alert("🚫 Automated typing pattern detected — score rejected.");
     inputEl.value = "";
@@ -193,6 +194,8 @@ async function endTest() {
   inputEl.disabled = true;
 
   const username = localStorage.getItem("username") || prompt("Enter your name:") || "Anonymous";
+  const avatar = localStorage.getItem("avatar") || "🔥";
+  const color = localStorage.getItem("color") || "#e06d00";
   localStorage.setItem("username", username);
 
   const seasonSelect = document.getElementById("seasonSelect");
@@ -203,7 +206,7 @@ async function endTest() {
     const res = await fetch(`${API_BASE}/api/scores/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, wpm, accuracy, totalChars, timeTaken, season, deviceType })
+      body: JSON.stringify({ username, avatar, color, wpm, accuracy, totalChars, timeTaken, season, deviceType })
     });
     if (!res.ok) {
       const errData = await res.json();
@@ -264,10 +267,18 @@ async function loadLeaderboard(seasonParam) {
     const leaderboardBody = document.getElementById("leaderboard-body");
     leaderboardBody.innerHTML = uniqueData
       .sort((a, b) => b.wpm - a.wpm)
-      .map((s, i) => {
-        const rankIcon = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}th`;
-        return `<tr><td>${rankIcon}</td><td>${s.username}</td><td>${s.wpm}</td><td>${s.accuracy}%</td></tr>`;
-      }).join("") || "<tr><td colspan='4'>No scores yet.</td></tr>";
+.map((s, i) => {
+  const rankIcon = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}th`;
+  const avatar = s.avatar || "🔥";
+  const color = s.color || "#e06d00";
+  return `
+    <tr>
+      <td>${rankIcon}</td>
+      <td><span class="user-name" style="color:${color};">${avatar} ${s.username}</span></td>
+      <td>${s.wpm}</td>
+      <td>${s.accuracy}%</td>
+    </tr>`;
+})
   } catch (err) {
     console.error("Leaderboard error:", err);
   }

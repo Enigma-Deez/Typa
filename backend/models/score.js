@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 
 const scoreSchema = new mongoose.Schema({
   username: { type: String, required: true },
+  avatar: { type: String, default: "🔥" },
+  color: { type: String, default: "#e06d00" },
   wpm: { type: Number, required: true },
   accuracy: { type: Number, required: true },
   totalChars: { type: Number },

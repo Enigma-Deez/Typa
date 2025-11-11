@@ -14,6 +14,7 @@
   <button><a href="archives.html">🏛️ Seasonal Archives</a></button>
   <div class="container">
     <div class="username-area">
+<div class="user-setup">
   <label for="username">Username:</label>
   <input 
     type="text" 
@@ -22,15 +23,33 @@
     autocomplete="off"
     oninput="saveUsername()"
   >
+
   <br>
+
   <label for="avatar">Avatar:</label>
-<select id="avatar">
-  <option>🔥</option>
-  <option>⚡</option>
-  <option>💻</option>
-  <option>🎯</option>
-  <option>🚀</option>
-</select>
+  <select id="avatar" onchange="saveUsername()">
+    <option>🔥</option>
+    <option>⚡</option>
+    <option>💻</option>
+    <option>🎯</option>
+    <option>🚀</option>
+  </select>
+
+  <br>
+
+  <label for="color">Name Color:</label>
+  <input 
+    type="color" 
+    id="color" 
+    value="#e06d00" 
+    onchange="saveUsername()"
+  >
+
+  <div id="userPreview" style="margin-top:8px; font-weight:600;">
+    Preview: <span id="previewDisplay" style="color:#e06d00;">🔥 Japheth</span>
+  </div>
+</div>
+
 
 <label for="color">Name Color:</label>
 <input type="color" id="color" value="#e06d00">
