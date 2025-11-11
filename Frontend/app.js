@@ -114,22 +114,30 @@ if (inputEl) {
 
     lastInputTime = now;
     lastLength = inputEl.value.length;
-      if (inputEl.value.trim() === currentText.trim()) {
-  endTest();
-}
+    if (inputEl.value.trim() === currentText.trim()) {
+      endTest();
+    }
   });
 
-  inputEl.addEventListener("keydown", () => {
-    const now = Date.now();
-    keyIntervals.push(now - lastKeyTime);
-    lastKeyTime = now;
-  });
+inputEl.addEventListener("keydown", (e) => {
+  const now = Date.now();
+  keyIntervals.push(now - lastKeyTime);
+  lastKeyTime = now;
+
+  // ✅ Press Enter → only end if text isn't empty
+  if (e.key === "Enter") {
+    e.preventDefault(); // prevent new line
+    if (inputEl.value.trim().length > 0) {
+      endTest();
+    }
+  }
+});
 
 }
 
 // Disable common shortcuts
 document.addEventListener("keydown", e => {
-  if ((e.ctrlKey || e.metaKey) && ['c','v','x','a'].includes(e.key.toLowerCase())) e.preventDefault();
+  if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x', 'a'].includes(e.key.toLowerCase())) e.preventDefault();
 });
 
 // ==================== Test Lifecycle ====================
@@ -245,7 +253,7 @@ async function loadLeaderboard(seasonParam) {
 
     const leaderboardBody = document.getElementById("leaderboard-body");
     leaderboardBody.innerHTML = uniqueData
-      .sort((a,b) => b.wpm - a.wpm)
+      .sort((a, b) => b.wpm - a.wpm)
       .map((s, i) => {
         const rankIcon = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}th`;
         return `<tr><td>${rankIcon}</td><td>${s.username}</td><td>${s.wpm}</td><td>${s.accuracy}%</td></tr>`;
