@@ -114,6 +114,9 @@ if (inputEl) {
 
     lastInputTime = now;
     lastLength = inputEl.value.length;
+      if (inputEl.value.trim() === currentText.trim()) {
+  endTest();
+}
   });
 
   inputEl.addEventListener("keydown", () => {
@@ -121,6 +124,7 @@ if (inputEl) {
     keyIntervals.push(now - lastKeyTime);
     lastKeyTime = now;
   });
+
 }
 
 // Disable common shortcuts
