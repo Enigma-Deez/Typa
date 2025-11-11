@@ -81,9 +81,19 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 function saveUsername() {
-  const usernameInput = document.getElementById("username");
-  const username = usernameInput?.value.trim();
-  if (username) localStorage.setItem("username", username);
+  const username = document.getElementById("username").value.trim();
+  const avatar = document.getElementById("avatar").value;
+  const color = document.getElementById("color").value;
+
+  let userId = localStorage.getItem("userId");
+  if (!userId) {
+    userId = crypto.randomUUID();
+    localStorage.setItem("userId", userId);
+  }
+
+  localStorage.setItem("username", username);
+  localStorage.setItem("avatar", avatar);
+  localStorage.setItem("color", color);
 }
 
 // ==================== Input Handling ====================
@@ -211,10 +221,10 @@ async function endTest() {
 
 // Helper for current season if none selected
 function getCurrentSeason() {
-  const today = new Date();
-  const year = today.getFullYear();
-  const quarter = Math.floor(today.getMonth() / 3) + 1;
-  return `${year}-Q${quarter}`;
+  const now = new Date();
+  const month = now.toLocaleString("default", { month: "long" });
+  const year = now.getFullYear();
+  return `${month} ${year}`;
 }
 
 // ==================== Leaderboard & Seasons ====================
